@@ -60,7 +60,7 @@ When running inside a Flutter WebView, this app also integrates with the native 
 
 - **Auto-detection**: Automatically detects if running in native app via `window.flutter_inappwebview`
 - **App Info**: Gets native app name, version, and platform
-- **FCM Token Management**: 
+- **FCM Token Management**:
   - Get native FCM token from device
   - Receive token updates when token refreshes
   - Delete FCM token on logout
@@ -108,10 +108,11 @@ When running inside a Flutter WebView, this app also integrates with the native 
 
 ## Related Documentation
 
-- **Flutter App**: `soccasio.mobileapps/` - Native mobile app with WebView
-- **Bridge Guide**: `soccasio.mobileapps/docs/WEBVIEW_BRIDGE.md` - Detailed bridge API documentation
-- **Notification Guide**: `soccasio.mobileapps/docs/PUSH_NOTIFICATIONS_GUIDE.md` - FCM implementation guide
-- **Integration Guide**: `soccasio.mobileapps/docs/WEBVIEW_PUSH_NOTIFICATION_INTEGRATION.md` - Web app integration guide
+- **Flutter App**: `<MOBILE_APP>/` - Native mobile app with WebView
+- **Bridge Guide**: `<MOBILE_APP>/docs/WEBVIEW_BRIDGE.md` - Detailed bridge API documentation
+- **Notification Guide**: `<MOBILE_APP>/docs/PUSH_NOTIFICATIONS_GUIDE.md` - FCM implementation guide
+- **Integration Guide**: `<MOBILE_APP>/docs/WEBVIEW_PUSH_NOTIFICATION_INTEGRATION.md` - Web app integration guide
+- **Logout Best Practices**: `<MOBILE_APP>/docs/FCM_LOGOUT_BEST_PRACTICES.md` - Comprehensive logout mechanism guide
 
 ## Testing
 
@@ -128,13 +129,13 @@ Foreground messages appear as toasts; background messages show system notificati
 To test with a Flutter mobile app:
 
 1. **Configure Flutter App**:
-   - Open `soccasio.mobileapps/lib/core/config/app_config.dart`
+   - Open `<MOBILE_APP>/lib/core/config/app_config.dart`
    - Set `webAppUrl` to `http://localhost:3000` (for development)
    - Or set to your deployed URL (for production)
 
 2. **Run Flutter App**:
    ```bash
-   cd soccasio.mobileapps
+   cd <MOBILE_APP>
    flutter run
    ```
 
@@ -148,7 +149,9 @@ To test with a Flutter mobile app:
    - **Get FCM Token**: Click "Get Native FCM Token" to retrieve device token
    - **Change Language**: Use language buttons to test locale changes
    - **Simulate Notification**: Click to test notification display
-   - **Logout**: Click logout to delete FCM token
+   - **Logout**: 
+     - For **Web**: Click "Web Logout" in Test Actions to clear web FCM token
+     - For **Native**: Click "Logout (Delete FCM Token)" in Native Bridge Actions
    - **Send Logs**: Test log forwarding to native console
 
 5. **Test Push Notifications**:
@@ -184,7 +187,9 @@ To test with a Flutter mobile app:
 - [ ] Push notifications forwarded from native to web
 - [ ] Toast notifications display with correct source (web_fcm/native)
 - [ ] Deep link navigation works from notification data
-- [ ] Logout deletes FCM token
+- [ ] Logout works correctly:
+  - Web: "Web Logout" clears web FCM token
+  - Native: "Logout (Delete FCM Token)" deletes native FCM token
 - [ ] Event log records all interactions
 
 ### Firebase Console Testing

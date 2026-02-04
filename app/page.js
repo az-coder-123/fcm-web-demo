@@ -19,6 +19,7 @@ export default function Home() {
     const [networkStatus, setNetworkStatus] = useState(null);
     const [notificationLog, setNotificationLog] = useState([]);
     const [logoutResult, setLogoutResult] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(true); // Track login state
 
     useEffect(() => {
         initFirebaseApp();
@@ -74,10 +75,16 @@ export default function Home() {
 
     // Listen for foreground messages from web FCM
     useEffect(() => {
-        let unsubscribe;
+        let unsub;
         (async () => {
             try {
-                unsubscribe = await onForegroundMessage((payload) => {
+                unsub = await onForegroundMessage((payload) => {
+                    // Only show notification if user is logged in
+                    if (!isLoggedIn) {
+                        addToLog('Web FCM Ignored', 'User logged out - notification ignored');
+                        return;
+                    }
+
                     const title = payload?.notification?.title || 'Notification';
                     const body = payload?.notification?.body || '';
                     setToast({ title, body, source: 'web_fcm' });
@@ -88,9 +95,11 @@ export default function Home() {
             }
         })();
         return () => {
-            if (typeof unsubscribe === 'function') unsubscribe();
+            if (typeof unsub === 'function') {
+                unsub();
+            }
         };
-    }, []);
+    }, [isLoggedIn]);
 
     // Listen for native bridge events
     useEffect(() => {
@@ -224,6 +233,7 @@ export default function Home() {
         try {
             const t = await requestNotificationPermissionAndToken();
             setToken(t);
+            setIsLoggedIn(true);
             addToLog('Web FCM', 'Token obtained');
         } catch (e) {
             setError(e?.message || String(e));
@@ -277,6 +287,7 @@ export default function Home() {
 
             if (response && response.success) {
                 setToken(null);
+                setIsLoggedIn(false);
                 setToast({
                     title: 'Logout Successful',
                     body: 'FCM token deleted. You can log in again to receive notifications.',
@@ -300,6 +311,29 @@ export default function Home() {
             addToLog('Sent Log', `[${level.toUpperCase()}] ${message}`);
         } catch (e) {
             console.error('Failed to send log:', e);
+        }
+    };
+
+    const handleWebLogout = () => {
+        if (!confirm('Are you sure you want to logout? This will clear the FCM token and stop receiving notifications.')) {
+            return;
+        }
+
+        try {
+            // Clear web FCM token
+            setToken(null);
+            setIsLoggedIn(false);
+
+            setToast({
+                title: 'Logout Successful',
+                body: 'FCM token cleared. Notifications are now disabled. Click "Get Web FCM Token" to enable again.',
+                source: 'web_fcm'
+            });
+            addToLog('Web Logout', 'FCM token cleared - notifications disabled');
+
+        } catch (e) {
+            setError(e?.message || String(e));
+            addToLog('Web Logout Error', e?.message || String(e));
         }
     };
 
@@ -469,12 +503,31 @@ export default function Home() {
             {/* Test Actions */}
             <section style={{ marginBottom: 24 }}>
                 <h2>Test Actions</h2>
-                <button
-                    onClick={handleSimulateNotification}
-                    style={{ padding: '8px 16px' }}
-                >
-                    Simulate Notification ({isNativeApp ? 'from Native' : 'Web'})
-                </button>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button
+                        onClick={handleSimulateNotification}
+                        style={{ padding: '8px 16px' }}
+                    >
+                        Simulate Notification ({isNativeApp ? 'from Native' : 'Web'})
+                    </button>
+
+                    {/* Web-only Logout */}
+                    {!isNativeApp && (
+                        <button
+                            onClick={handleWebLogout}
+                            style={{
+                                padding: '8px 16px',
+                                background: '#d32f2f',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: 4,
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Web Logout
+                        </button>
+                    )}
+                </div>
             </section>
 
             {/* Event Log */}
@@ -576,7 +629,12 @@ export default function Home() {
                     <li><strong>Web Browser:</strong> Click "Get Web FCM Token" to get a web FCM token</li>
                     <li><strong>Native App:</strong> Click "Get Native FCM Token" to get the native FCM token</li>
                     <li><strong>Change Language:</strong> Use the language buttons to test locale changes</li>
-                    <li><strong>Logout:</strong> Click logout to delete the FCM token (requires confirmation)</li>
+                    <li><strong>Logout:</strong>
+                        <ul>
+                            <li><strong>Web:</strong> Click "Web Logout" in Test Actions to clear the web FCM token</li>
+                            <li><strong>Native:</strong> Click "Logout (Delete FCM Token)" in Native Bridge Actions</li>
+                        </ul>
+                    </li>
                     <li><strong>Simulate Notification:</strong> Click to test notification display</li>
                     <li><strong>Event Log:</strong> All events are logged below for debugging</li>
                 </ol>
