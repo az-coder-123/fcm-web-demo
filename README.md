@@ -55,6 +55,31 @@ Open http://localhost:3000 and click "Enable Notifications" to:
 - **Service Worker** ([public/firebase-messaging-sw.js](public/firebase-messaging-sw.js)): Handles background notifications when the app is not in focus
 - **Layout Injection** ([app/layout.js](app/layout.js)): Injects Firebase config into `window.__FIREBASE_CONFIG__` for service worker access
 
+### Mobile Webview Mode (query param: `?versioninfo=mobileapp`)
+- When the page is opened with `?versioninfo=mobileapp`, the app treats the session as a mobile app webview:
+  - **Firebase initialization is skipped** (no `initializeApp` will run).
+  - **Service Worker registration is skipped** (no `/firebase-messaging-sw.js` registration).
+  - The UI forces native mode (`isNativeApp = true`) so the app uses the native bridge for tokens and notifications.
+  - Calling web FCM functions (e.g., `requestNotificationPermissionAndToken()` or `onForegroundMessage()`) will fail — `getMessagingInstance()` will throw an error explaining web FCM is disabled in this mode.
+- How to forward notifications from native to web:
+  - Native should dispatch the `pushNotificationReceived` event (or call the JS bridge) to forward notification payloads, for example:
+
+```javascript
+window.dispatchEvent(new CustomEvent('pushNotificationReceived', {
+  detail: {
+    messageId: 'id',
+    title: 'Title',
+    body: 'Body',
+    data: { deep_link: '/path' },
+    sentTime: new Date().toISOString(),
+    receivedTime: new Date().toISOString()
+  }
+}));
+```
+
+- For Flutter WebView, append the query param when loading the URL (dev example: `http://localhost:3000/?versioninfo=mobileapp`).
+- This prevents duplicate delivery between web and native and ensures the native app is the single source of push notifications.
+
 ### Native Bridge Features
 When running inside a Flutter WebView, this app also integrates with the native bridge:
 

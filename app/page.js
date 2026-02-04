@@ -22,29 +22,45 @@ export default function Home() {
     const [isLoggedIn, setIsLoggedIn] = useState(true); // Track login state
 
     useEffect(() => {
-        initFirebaseApp();
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker
-                .register('/firebase-messaging-sw.js')
-                .then((registration) => {
-                    console.log('Service Worker registered', registration);
+        // Detect mobile app webview via query parameter ?versioninfo=mobileapp
+        const isMobileAppParam = (typeof window !== 'undefined') && new URLSearchParams(window.location.search).get('versioninfo') === 'mobileapp';
+        if (isMobileAppParam) {
+            console.log('versioninfo=mobileapp detected: skipping Firebase initialization and Service Worker registration.');
+            // Treat query param as mobile app webview mode so UI uses native bridge flows
+            setIsNativeApp(true);
+            setAppInfo({ appName: 'Mobile Webview', version: 'unknown', platform: 'mobile-webview' });
+            // Log to Event Log so it's visible in UI
+            try {
+                addToLog('Environment', 'Detected mobile webview (versioninfo=mobileapp)');
+                addToLog('App Info', JSON.stringify({ appName: 'Mobile Webview', version: 'unknown', platform: 'mobile-webview' }));
+            } catch (e) {
+                console.warn('addToLog not available yet', e);
+            }
+        } else {
+            initFirebaseApp();
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker
+                    .register('/firebase-messaging-sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered', registration);
 
-                    // Send firebase config to the service worker so it can initialize messaging
-                    const config = (typeof window !== 'undefined' && window.__FIREBASE_CONFIG__) ? window.__FIREBASE_CONFIG__ : {};
+                        // Send firebase config to the service worker so it can initialize messaging
+                        const config = (typeof window !== 'undefined' && window.__FIREBASE_CONFIG__) ? window.__FIREBASE_CONFIG__ : {};
 
-                    navigator.serviceWorker.ready
-                        .then((reg) => {
-                            // Prefer active, then waiting, then installing
-                            const target = reg.active || reg.waiting || reg.installing;
-                            if (target && typeof target.postMessage === 'function') {
-                                target.postMessage({ type: 'SET_FIREBASE_CONFIG', config });
-                            }
-                        })
-                        .catch((e) => console.warn('Failed to postMessage to service worker', e));
-                })
-                .catch((err) => {
-                    console.error('Service Worker registration failed', err);
-                });
+                        navigator.serviceWorker.ready
+                            .then((reg) => {
+                                // Prefer active, then waiting, then installing
+                                const target = reg.active || reg.waiting || reg.installing;
+                                if (target && typeof target.postMessage === 'function') {
+                                    target.postMessage({ type: 'SET_FIREBASE_CONFIG', config });
+                                }
+                            })
+                            .catch((e) => console.warn('Failed to postMessage to service worker', e));
+                    })
+                    .catch((err) => {
+                        console.error('Service Worker registration failed', err);
+                    });
+            }
         }
 
         // Check if running in native app
@@ -61,15 +77,33 @@ export default function Home() {
                     setAppInfo(info);
                     console.log('Running in native app:', info);
 
+                    // Log to Event Log
+                    try {
+                        addToLog('Native Bridge', `Detected native bridge: ${info.appName || 'unknown'} v${info.version || 'unknown'} (${info.platform || 'unknown'})`);
+                        addToLog('App Info', JSON.stringify(info));
+                    } catch (e) {
+                        console.warn('addToLog not available yet', e);
+                    }
+
                     // Get current locale
                     const locale = await window.flutter_inappwebview.callHandler('getLocale');
                     if (locale && locale.success) {
                         setCurrentLocale(locale);
+                        try {
+                            addToLog('Locale', `${locale.languageCode}-${locale.countryCode || ''}`);
+                        } catch (e) {
+                            /* ignore */
+                        }
                     }
                 }
             }
         } catch (err) {
             console.log('Not running in native app or bridge not ready:', err);
+            try {
+                addToLog('Native Bridge', `Bridge not available or error: ${err?.message || String(err)}`);
+            } catch (e) {
+                /* ignore */
+            }
         }
     };
 
@@ -152,7 +186,23 @@ export default function Home() {
         const handlePushNotificationReceived = (event) => {
             const notification = event.detail;
             console.log('Push notification from native:', notification);
-            const { title, body, data, sentTime, receivedTime } = notification;
+            const { title, body, data, sentTime, receivedTime, messageId } = notification;
+
+            // Log data payload for debugging (structured + event log)
+            console.log('Push notification payload (native) data:', data);
+            if (data && typeof data === 'object') {
+                try {
+                    console.log('Push payload keys:', Object.keys(data));
+                    addToLog('Push data (Native)', JSON.stringify(data));
+                } catch (e) {
+                    console.warn('Failed to stringify push data', e);
+                    addToLog('Push data (Native)', 'Unable to stringify data');
+                }
+            } else if (data) {
+                addToLog('Push data (Native)', String(data));
+            } else {
+                addToLog('Push data (Native)', 'no data');
+            }
 
             setToast({
                 title: title || 'Native Notification',
@@ -168,7 +218,7 @@ export default function Home() {
 
             addToLog(
                 'Push notification (Native)',
-                `${title || 'No title'} ${latency ? `(${latency}ms)` : ''}`
+                `${title || 'No title'}${messageId ? ` [${messageId}]` : ''} ${latency ? `(${latency}ms)` : ''}`
             );
 
             // Handle deep link
@@ -221,10 +271,18 @@ export default function Home() {
         return () => clearTimeout(id);
     }, [toast]);
 
+    // Track which logs are expanded to show details (by id)
+    const [expandedLogIds, setExpandedLogIds] = useState({});
+
+    const toggleLogExpanded = (id) => {
+        setExpandedLogIds(prev => ({ ...prev, [id]: !prev[id] }));
+    };
+
     const addToLog = (type, message) => {
         const timestamp = new Date().toLocaleTimeString();
+        const id = `${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
         setNotificationLog(prev => [
-            { type, message, timestamp },
+            { id, type, message, timestamp },
             ...prev
         ].slice(0, 20)); // Keep last 20 logs
     };
@@ -551,13 +609,47 @@ export default function Home() {
                     {notificationLog.length === 0 ? (
                         <p style={{ color: '#666', fontStyle: 'italic' }}>No events yet...</p>
                     ) : (
-                        notificationLog.map((log, idx) => (
-                            <div key={idx} style={{ marginBottom: 4, borderBottom: '1px solid #e0e0e0', paddingBottom: 4 }}>
-                                <span style={{ color: '#666' }}>[{log.timestamp}]</span>
-                                <span style={{ fontWeight: 'bold', marginLeft: 8 }}>{log.type}:</span>
-                                <span style={{ marginLeft: 8 }}>{log.message}</span>
-                            </div>
-                        ))
+                        notificationLog.map((log, idx) => {
+                            // Try to parse message as JSON for nicer display
+                            let parsed = null;
+                            try {
+                                if (typeof log.message === 'string') {
+                                    parsed = JSON.parse(log.message);
+                                }
+                            } catch (e) {
+                                parsed = null;
+                            }
+
+                            const isExpanded = !!(log.id && expandedLogIds[log.id]);
+
+                            return (
+                                <div key={log.id || idx} style={{ marginBottom: 8, borderBottom: '1px solid #e0e0e0', paddingBottom: 6 }}>
+                                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                        <span style={{ color: '#666', minWidth: 90 }}>[{log.timestamp}]</span>
+                                        <span style={{ fontWeight: 'bold' }}>{log.type}:</span>
+                                        <div style={{ marginLeft: 8, flex: 1 }}>
+                                            {!parsed ? (
+                                                <div style={{ whiteSpace: 'pre-wrap' }}>{log.message}</div>
+                                            ) : (
+                                                <div>
+                                                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                                        <div style={{ color: '#666', fontSize: 12 }}>{Object.keys(parsed).length} keys</div>
+                                                        <button onClick={() => toggleLogExpanded(log.id)} style={{ padding: '2px 8px', fontSize: 12 }}>
+                                                            {isExpanded ? 'Hide details' : 'Show details'}
+                                                        </button>
+                                                    </div>
+                                                    {isExpanded && (
+                                                        <pre style={{ background: '#fff', padding: 8, borderRadius: 6, marginTop: 6, whiteSpace: 'pre-wrap', overflowX: 'auto' }}>
+                                                            {JSON.stringify(parsed, null, 2)}
+                                                        </pre>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
                     )}
                 </div>
             </section>
