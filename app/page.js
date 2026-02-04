@@ -27,6 +27,19 @@ export default function Home() {
                 .register('/firebase-messaging-sw.js')
                 .then((registration) => {
                     console.log('Service Worker registered', registration);
+
+                    // Send firebase config to the service worker so it can initialize messaging
+                    const config = (typeof window !== 'undefined' && window.__FIREBASE_CONFIG__) ? window.__FIREBASE_CONFIG__ : {};
+
+                    navigator.serviceWorker.ready
+                        .then((reg) => {
+                            // Prefer active, then waiting, then installing
+                            const target = reg.active || reg.waiting || reg.installing;
+                            if (target && typeof target.postMessage === 'function') {
+                                target.postMessage({ type: 'SET_FIREBASE_CONFIG', config });
+                            }
+                        })
+                        .catch((e) => console.warn('Failed to postMessage to service worker', e));
                 })
                 .catch((err) => {
                     console.error('Service Worker registration failed', err);
