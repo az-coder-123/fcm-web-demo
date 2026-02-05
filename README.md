@@ -1,120 +1,344 @@
-# Webview FCM & Native Bridge Demo (Next.js)
+# Webview FCM & Native Bridge Demo
 
-A Next.js app that demonstrates Firebase Cloud Messaging (FCM) push notifications and native bridge integration with Flutter mobile apps.
+<div align="center">
 
-## Setup
+A professional Next.js application demonstrating Firebase Cloud Messaging (FCM) push notifications and seamless native bridge integration with Flutter mobile applications.
 
-### 1. Prerequisites
-- Node.js 18+
+[![Next.js](https://img.shields.io/badge/Next.js-18-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![Firebase](https://img.shields.io/badge/Firebase-Cloud%20Messaging-orange?style=flat-square&logo=firebase)](https://firebase.google.com/)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
-### 2. Configure Environment Variables
+</div>
 
-All Firebase credentials are stored in `.env.local`. Copy your values from **Firebase Console → Project Settings**:
+---
 
-```
-# Firebase Web App Configuration
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_DATABASE_URL=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
+## 📋 Table of Contents
 
-# Web Push Certificate (VAPID Key)
-# From Firebase Console → Project Settings → Cloud Messaging → Web configuration
-NEXT_PUBLIC_FIREBASE_VAPID_KEY=
-```
+- [Overview](#-overview)
+- [Features](#-features)
+- [Quick Start](#-quick-start)
+- [Architecture](#-architecture)
+- [Setup](#-setup)
+- [Usage](#-usage)
+- [Native Bridge](#-native-bridge)
+- [API Reference](#-api-reference)
+- [Testing](#-testing)
+- [Security](#-security)
+- [Troubleshooting](#-troubleshooting)
 
-> **Note:** All variables are prefixed with `NEXT_PUBLIC_` so they're available in the browser. Do not store secrets here.
+---
 
-### 3. Install Dependencies
+## 🎯 Overview
+
+This application serves as a comprehensive demonstration of modern web push notifications and native bridge communication patterns. It showcases:
+
+- **Web FCM Integration**: Complete Firebase Cloud Messaging implementation for web browsers
+- **Native Bridge**: Seamless bidirectional communication between WebView and native Flutter app
+- **Push Notification Forwarding**: Smart notification routing to prevent duplicate delivery
+- **Real-time Event Logging**: Comprehensive event tracking and debugging capabilities
+
+---
+
+## ✨ Features
+
+### Web FCM Features
+- ✅ **Push Notifications** - Receive notifications in foreground and background
+- ✅ **Token Management** - Automatic token retrieval and refresh handling
+- ✅ **Permission Handling** - User-friendly notification permission requests
+- ✅ **Service Worker** - Background notification support
+- ✅ **Toast System** - Professional, animated notification display
+- ✅ **Responsive Design** - Optimized for desktop, tablet, and mobile
+
+### Native Bridge Features
+- 🔗 **Auto-detection** - Automatically detects native app environment
+- 📱 **App Info** - Retrieve native app name, version, and platform
+- 🔔 **FCM Token Sync** - Get and sync native FCM tokens
+- 🌐 **Language Switching** - Dynamic locale changes (English/Vietnamese)
+- 📶 **Network Monitoring** - Real-time online/offline status tracking
+- 📨 **Push Forwarding** - Native notifications forwarded to web UI
+- 🔗 **Deep Linking** - Navigation from notification data
+- 📋 **Logging** - Forward debug logs to native console
+- 🔐 **Logout** - Secure FCM token deletion
+
+### UI Components
+- 🎨 **Modern Design** - Professional gradient-based notifications
+- 📊 **Status Dashboard** - Real-time app status indicators
+- 📜 **Event Log** - Chronological event tracking
+- 🎯 **Action Panels** - Intuitive control interfaces
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+ installed
+- Firebase project with Cloud Messaging enabled
+- (Optional) Flutter app for native bridge testing
+
+### Installation
 
 ```bash
+# Clone and navigate
+cd fcm-web-demo
+
+# Install dependencies
 npm install
-```
 
-## Run
+# Configure environment (see Setup section below)
+cp .env.local.example .env.local
 
-Start the dev server:
-
-```bash
+# Start development server
 npm run dev
 ```
 
-Open http://localhost:3000 and click "Enable Notifications" to:
-1. Request notification permission
-2. Fetch your FCM registration token
-3. See foreground messages as toasts
+Open [http://localhost:3000](http://localhost:3000) to get started!
 
-## How It Works
+---
 
-### Web FCM Features
-- **Client Messaging** ([lib/fcm.js](lib/fcm.js)): Manages Firebase initialization, token retrieval, and foreground listeners
-- **Service Worker** ([public/firebase-messaging-sw.js](public/firebase-messaging-sw.js)): Handles background notifications when the app is not in focus
-- **Layout Injection** ([app/layout.js](app/layout.js)): Injects Firebase config into `window.__FIREBASE_CONFIG__` for service worker access
+## 🏗️ Architecture
 
-### Mobile Webview Mode (query param: `?versioninfo=mobileapp`)
-- When the page is opened with `?versioninfo=mobileapp`, the app treats the session as a mobile app webview:
-  - **Firebase initialization is skipped** (no `initializeApp` will run).
-  - **Service Worker registration is skipped** (no `/firebase-messaging-sw.js` registration).
-  - The UI forces native mode (`isNativeApp = true`) so the app uses the native bridge for tokens and notifications.
-  - Calling web FCM functions (e.g., `requestNotificationPermissionAndToken()` or `onForegroundMessage()`) will fail — `getMessagingInstance()` will throw an error explaining web FCM is disabled in this mode.
-- How to forward notifications from native to web:
-  - Native should dispatch the `pushNotificationReceived` event (or call the JS bridge) to forward notification payloads, for example:
+### System Overview
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                     Web Browser / WebView                  │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│  ┌──────────────┐         ┌──────────────────────────────┐ │
+│  │   Web FCM    │         │      Native Bridge           │ │
+│  │              │         │                              │ │
+│  │  • Token Mgmt│         │  • Auto-detection            │ │
+│  │  • Messages  │         │  • App Info                  │ │
+│  │  • SW Handle │         │  • Token Sync                │ │
+│  └──────┬───────┘         │  • Locale Change             │ │
+│         │                 │  • Network Status            │ │
+│         │                 │  • Push Forwarding           │ │
+│         │                 └──────────┬───────────────────┘ │
+│         ▼                            │                     │
+│  ┌──────────────┐                    │                     │
+│  │   Toast UI   │                    │                     │
+│  │   Event Log  │◄───────────────────┘                     │
+│  │  Status Bar  │                                          │
+│  └──────────────┘                                          │
+│                                                            │
+└────────────────────────────────────────────────────────────┘
+         ▲                              ▲
+         │                              │
+      Firebase                     Flutter App
+    Cloud Messaging                 (Native)
+```
+
+### Web FCM Flow
+
+```
+User Action ──► Request Permission
+                │
+                ▼
+         Get FCM Token ──► Store Token
+                │
+                ▼
+      Firebase Cloud Messaging ──► Push Notification
+                                          │
+                    ┌─────────────────────┴─────────────────────┐
+                    │                                           │
+               Foreground                                  Background
+                    │                                           │
+                    ▼                                           ▼
+              Toast Display                            System Notification
+              (App in focus)                           (App in background)
+```
+
+### Native Bridge Flow
+
+```
+Flutter App ──► WebView loads URL
+                    │
+                    ▼
+         Detect Native Bridge
+                    │
+        ┌───────────┼───────────┐
+        │           │           │
+        ▼           ▼           ▼
+   Get Token      Change     Forward
+                  Locale       Push
+        │           │           │
+        └───────────┴───────────┘
+                    │
+                    ▼
+         Dispatch Custom Events ──► React Components
+                                            │
+                                            ▼
+                                      Update UI State
+```
+
+---
+
+## ⚙️ Setup
+
+### 1. Firebase Configuration
+
+Create a `.env.local` file in the project root:
+
+```bash
+# Firebase Web App Configuration
+# Get from: Firebase Console → Project Settings → General → Your Apps → Web App
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_DATABASE_URL=https://your_project.firebaseio.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+
+# Web Push Certificate (VAPID Key)
+# Get from: Firebase Console → Project Settings → Cloud Messaging → Web configuration
+NEXT_PUBLIC_FIREBASE_VAPID_KEY=your_vapid_key
+```
+
+> **⚠️ Security Note**: All variables are prefixed with `NEXT_PUBLIC_` so they're available in the browser. Only use public/browser-safe credentials. Never expose private keys or server secrets.
+
+### 2. Firebase Project Setup
+
+1. **Create Firebase Project**
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Click "Add project"
+   - Follow the setup wizard
+
+2. **Enable Cloud Messaging**
+   - Navigate to Project Settings → Cloud Messaging
+   - Click "Cloud Messaging API (V1)"
+   - Follow the setup instructions
+
+3. **Add Web App**
+   - Go to Project Settings → General
+   - Click "Add app" → Web
+   - Copy the configuration values to `.env.local`
+
+4. **Generate VAPID Key**
+   - Navigate to Project Settings → Cloud Messaging
+   - Scroll to "Web configuration"
+   - Click "Generate key pair"
+   - Copy the VAPID key to `.env.local`
+
+### 3. Service Worker Setup
+
+The service worker is automatically registered at startup. Ensure:
+
+- `public/firebase-messaging-sw.js` exists and is properly configured
+- Firebase config is injected via `window.__FIREBASE_CONFIG__`
+- Service worker runs at root path `/firebase-messaging-sw.js`
+
+---
+
+## 📖 Usage
+
+### Web Browser Testing
+
+#### Step 1: Enable Notifications
+1. Click "Enable Notifications" button
+2. Allow browser notification permission
+3. Copy your FCM token displayed
+
+#### Step 2: Send Test Notification
+1. Go to [Firebase Console → Cloud Messaging](https://console.firebase.google.com/project/_/notification)
+2. Click "Send your first message"
+3. Target: Paste your FCM token
+4. Notification: Enter title and body
+5. Send and observe toast notification
+
+#### Step 3: Test Background Notifications
+1. Minimize or switch away from the tab
+2. Send another notification
+3. See system notification appear
+4. Click notification to return to app
+
+### Mobile Webview Mode
+
+The app automatically detects mobile webview via query parameter `?versioninfo=mobileapp`.
+
+#### Behavior Differences
+
+| Feature | Web Browser | Mobile Webview |
+|---------|-------------|----------------|
+| Firebase Init | ✅ Yes | ❌ Skipped |
+| Service Worker | ✅ Registered | ❌ Skipped |
+| Token Source | Web FCM | Native Bridge |
+| Push Delivery | Web + System | Native → Web Forwarding |
+
+#### Loading in Flutter App
+
+```dart
+// In your Flutter WebView widget
+WebView(
+  initialUrl: 'http://localhost:3000/?versioninfo=mobileapp',
+  // or production URL
+  // initialUrl: 'https://your-domain.com/?versioninfo=mobileapp',
+)
+```
+
+This prevents duplicate notifications and ensures native app is the single source of push notifications.
+
+---
+
+## 🌉 Native Bridge
+
+### Auto-Detection
+
+The app automatically detects if running in a Flutter WebView:
+
+```javascript
+if (window.flutter_inappwebview) {
+  // Native bridge available
+  const info = await window.flutter_inappwebview.callHandler('getAppInfo');
+}
+```
+
+### Communication Flow
+
+#### App → Native (Calling Handlers)
+
+```javascript
+const response = await window.flutter_inappwebview.callHandler('handlerName', param1, param2);
+// Response: { success: true, data: {...} }
+```
+
+#### Native → App (Event Listeners)
+
+```javascript
+window.addEventListener('eventName', (event) => {
+  console.log('Event data:', event.detail);
+});
+```
+
+### Notification Forwarding
+
+Native app forwards notifications to web:
 
 ```javascript
 window.dispatchEvent(new CustomEvent('pushNotificationReceived', {
   detail: {
-    messageId: 'id',
-    title: 'Title',
-    body: 'Body',
-    data: { deep_link: '/path' },
+    messageId: 'msg_123',
+    title: 'New Message',
+    body: 'You have a new message',
+    data: {
+      type: 'new_message',
+      deep_link: '/messages/123'
+    },
     sentTime: new Date().toISOString(),
     receivedTime: new Date().toISOString()
   }
 }));
 ```
 
-- For Flutter WebView, append the query param when loading the URL (dev example: `http://localhost:3000/?versioninfo=mobileapp`).
-- This prevents duplicate delivery between web and native and ensures the native app is the single source of push notifications.
+---
 
-### Native Bridge Features
-When running inside a Flutter WebView, this app also integrates with the native bridge:
+## 📚 API Reference
 
-- **Auto-detection**: Automatically detects if running in native app via `window.flutter_inappwebview`
-- **App Info**: Gets native app name, version, and platform
-- **FCM Token Management**:
-  - Get native FCM token from device
-  - Receive token updates when token refreshes
-  - Delete FCM token on logout
-- **Language Switching**: Change app language (English/Vietnamese) from native
-- **Network Status**: Monitor online/offline status changes
-- **Push Notifications**: Receive notifications forwarded from native app
-- **Deep Link Handling**: Navigate to deep links from notifications
-- **Logging**: Send debug logs to native console
-- **Logout**: Trigger native logout and FCM token deletion
+### Native Bridge Handlers
 
-### UI Components
-- **Status Indicator**: Shows whether running in browser or native app
-- **Toast Notifications**: Displays FCM messages (web and native) with different styles
-- **Event Log**: Real-time log of all events and actions
-- **Control Panel**: Buttons to test all native bridge features
-
-## Security
-
-- Firebase config is read from environment variables (`.env.local`)
-- Only public/browser-safe credentials are used (no server keys)
-- Service worker can access config via injected global object
-- VAPID key is required for web push but never exposed beyond the client
-- Native bridge calls are validated (origin check on sensitive handlers)
-- Deep links are validated before navigation (requires user confirmation)
-
-## Available Native Bridge Handlers
-
-| Handler | Purpose | Parameters | Returns |
-|----------|---------|-------------|----------|
+| Handler | Description | Parameters | Returns |
+|---------|-------------|------------|---------|
 | `getAppInfo` | Get native app info | None | `{success, appName, version, platform, bridgeChannel}` |
 | `getFCMToken` | Get native FCM token | None | `{success, token, error}` |
 | `changeLocale` | Change app language | `languageCode` (en/vi) | `{success, locale, error}` |
@@ -122,132 +346,231 @@ When running inside a Flutter WebView, this app also integrates with the native 
 | `logout` | Delete FCM token | None | `{success, error}` |
 | `log` | Send log to native | `message`, `level` | `{success}` |
 
-## Available Native Bridge Events
+### Native Bridge Events
 
-| Event | Triggered When | Data |
-|--------|--------------|-------|
+| Event | Triggered When | Data Structure |
+|--------|--------------|-----------------|
 | `fcmTokenUpdated` | FCM token refreshes | `{success, token, ts, source}` |
 | `localeChanged` | Language changes | `{languageCode}` |
 | `networkStatusChanged` | Network status changes | `{isOnline}` |
 | `pushNotificationReceived` | Notification received | `{messageId, title, body, data, sentTime, receivedTime}` |
 
-## Related Documentation
+### Web FCM Functions
 
-- **Flutter App**: `<MOBILE_APP>/` - Native mobile app with WebView
-- **Bridge Guide**: `<MOBILE_APP>/docs/WEBVIEW_BRIDGE.md` - Detailed bridge API documentation
-- **Notification Guide**: `<MOBILE_APP>/docs/PUSH_NOTIFICATIONS_GUIDE.md` - FCM implementation guide
-- **Integration Guide**: `<MOBILE_APP>/docs/WEBVIEW_PUSH_NOTIFICATION_INTEGRATION.md` - Web app integration guide
-- **Logout Best Practices**: `<MOBILE_APP>/docs/FCM_LOGOUT_BEST_PRACTICES.md` - Comprehensive logout mechanism guide
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `initFirebaseApp()` | Initialize Firebase app | `void` |
+| `requestNotificationPermissionAndToken()` | Request permission & get token | `Promise<string>` - FCM token |
+| `onForegroundMessage(callback)` | Listen to foreground messages | `Promise<Function>` - Unsubscribe function |
 
-## Testing
+---
 
-### Web Browser Testing
+## 🧪 Testing
 
-Send a test message to your FCM token using:
-- Firebase Console → Cloud Messaging → Send your first message
-- Or use a backend script with the Firebase Admin SDK
+### Web Testing Checklist
 
-Foreground messages appear as toasts; background messages show system notifications.
+- [ ] Firebase configured in `.env.local`
+- [ ] Development server running at `http://localhost:3000`
+- [ ] Browser notification permission granted
+- [ ] FCM token displayed successfully
+- [ ] Foreground notification appears as toast
+- [ ] Background notification appears as system notification
+- [ ] Toast dismisses automatically after 5 seconds
+- [ ] Event log records all events
+- [ ] Responsive design works on different screen sizes
 
-### Native App Testing
+### Native App Testing Checklist
 
-To test with a Flutter mobile app:
+- [ ] WebView loads with `?versioninfo=mobileapp`
+- [ ] App detects native bridge (blue status bar)
+- [ ] App info displays correctly
+- [ ] Native FCM token retrieved
+- [ ] Language changes update UI
+- [ ] Network status changes detected
+- [ ] Push notifications forwarded to web
+- [ ] Toast notifications display with "native_push" source
+- [ ] Deep link navigation works
+- [ ] Logout deletes FCM token
+- [ ] Event log records all bridge interactions
 
-1. **Configure Flutter App**:
-   - Open `<MOBILE_APP>/lib/core/config/app_config.dart`
-   - Set `webAppUrl` to `http://localhost:3000` (for development)
-   - Or set to your deployed URL (for production)
+### Integration Test Flow
 
-2. **Run Flutter App**:
+1. **Start Web Demo**
    ```bash
-   cd <MOBILE_APP>
-   flutter run
-   ```
-
-3. **Run Web Demo**:
-   ```bash
-   cd fcm-web-demo
    npm run dev
    ```
 
-4. **Test Native Bridge Features**:
-   - **Get FCM Token**: Click "Get Native FCM Token" to retrieve device token
-   - **Change Language**: Use language buttons to test locale changes
-   - **Simulate Notification**: Click to test notification display
-   - **Logout**: 
-     - For **Web**: Click "Web Logout" in Test Actions to clear web FCM token
-     - For **Native**: Click "Logout (Delete FCM Token)" in Native Bridge Actions
-   - **Send Logs**: Test log forwarding to native console
+2. **Run Flutter App**
+   ```bash
+   cd ../soccasio.mobileapps
+   flutter run
+   ```
 
-5. **Test Push Notifications**:
-   - Get native FCM token from the demo page
-   - Use Firebase Console to send test notification
-   - Include custom data in payload:
-     ```json
-     {
-       "notification": {
-         "title": "Test Notification",
-         "body": "This is a test"
-       },
-       "data": {
-         "type": "test",
-         "deep_link": "/test-page"
-       }
-     }
-     ```
-   - Notification will be forwarded to web app and displayed
+3. **Test Sequence**
+   - Verify native bridge detection
+   - Get native FCM token
+   - Change language (en/vi)
+   - Test network status (disconnect/reconnect WiFi)
+   - Send test notification from Firebase Console
+   - Verify notification forwarding
+   - Test deep link navigation
+   - Test logout functionality
+   - Review event log
 
-6. **Monitor Events**:
-   - Watch the "Event Log" section at the bottom
-   - See real-time logs of all bridge interactions
-   - Toast notifications appear for each event
-
-### Integration Testing Checklist
-
-- [ ] Web app detects running in native app (blue status bar)
-- [ ] App info displays correctly (name, version, platform)
-- [ ] Native FCM token retrieved successfully
-- [ ] Language changes trigger locale updates
-- [ ] Network status changes detected (disconnect/reconnect WiFi)
-- [ ] Push notifications forwarded from native to web
-- [ ] Toast notifications display with correct source (web_fcm/native)
-- [ ] Deep link navigation works from notification data
-- [ ] Logout works correctly:
-  - Web: "Web Logout" clears web FCM token
-  - Native: "Logout (Delete FCM Token)" deletes native FCM token
-- [ ] Event log records all interactions
-
-### Firebase Console Testing
-
-1. Open Firebase Console → Cloud Messaging
-2. Click "Send your first message"
-3. **Target**: 
-   - For web testing: Use web FCM token
-   - For native testing: Use native FCM token
-4. **Notification**: Enter title and body
-5. **Advanced options → Custom data**:
+4. **Firebase Console Test**
    ```json
    {
-     "type": "new_message",
-     "deep_link": "/messages/123",
-     "message_id": "msg_456"
+     "notification": {
+       "title": "Integration Test",
+       "body": "Testing notification forwarding"
+     },
+     "data": {
+       "type": "test",
+       "deep_link": "/test-page",
+       "message_id": "test_123"
+     }
    }
    ```
-6. Send and observe in the demo app
 
-### Debugging
+### Debugging Tools
 
-**Check if bridge is available**:
+#### Check Bridge Availability
 ```javascript
 console.log('Bridge available:', typeof window.flutter_inappwebview !== 'undefined');
 ```
 
-**Monitor native console**:
-- Use Flutter DevTools or Xcode/Android Studio logs
-- Look for "[JSBridge]" and "Notification" logs
-- Check for "Sent event to web: pushNotificationReceived"
+#### Monitor Events
+```javascript
+// All events are logged in the Event Log section
+// Clear log button resets the log
+// Last 20 events are retained
+```
 
-**Event Log in Demo**:
-- All interactions are logged with timestamps
-- Use "Clear Log" button to reset
-- Last 20 events are kept
+#### Native Console Logs
+- **Flutter**: Use Flutter DevTools
+- **iOS**: Check Xcode console logs
+- **Android**: Check Android Studio Logcat
+- Look for: `[JSBridge]`, `Notification`, `Event`
+
+---
+
+## 🔒 Security
+
+### Firebase Security
+- ✅ Config stored in environment variables (`.env.local`)
+- ✅ Only public credentials exposed (no server keys)
+- ✅ Service worker config injected via `window.__FIREBASE_CONFIG__`
+- ✅ VAPID key for web push authentication
+- ❌ Never expose private keys or secrets
+
+### Native Bridge Security
+- ✅ Origin validation on sensitive handlers
+- ✅ Deep link validation before navigation
+- ✅ User confirmation for deep links
+- ✅ Secure token deletion on logout
+- ✅ Error handling for invalid responses
+
+### Best Practices
+1. **Never commit** `.env.local` to version control
+2. **Use environment-specific** Firebase projects (dev/staging/prod)
+3. **Validate all** user inputs and deep link parameters
+4. **Implement rate limiting** for bridge calls if needed
+5. **Monitor** for suspicious bridge activity
+6. **Use HTTPS** in production for WebView URL
+
+---
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+#### 1. Notifications Not Working
+**Symptoms**: Token displayed but no notifications received
+
+**Solutions**:
+- Check Firebase Cloud Messaging is enabled
+- Verify VAPID key is correct in `.env.local`
+- Ensure browser allows notifications
+- Check browser console for errors
+- Verify token is correct when sending from Firebase Console
+
+#### 2. Native Bridge Not Detected
+**Symptoms**: Shows "Running in Web Browser" even in WebView
+
+**Solutions**:
+- Ensure `?versioninfo=mobileapp` is in URL
+- Check Flutter app config for WebView bridge
+- Verify `flutter_inappwebview` plugin is installed
+- Check WebView JavaScript is enabled
+
+#### 3. Service Worker Registration Fails
+**Symptoms**: Console shows SW registration error
+
+**Solutions**:
+- Ensure `public/firebase-messaging-sw.js` exists
+- Check SW is served from root path
+- Verify HTTPS is used (SW requires HTTPS except localhost)
+- Clear browser cache and SW storage
+
+#### 4. Duplicate Notifications
+**Symptoms**: Same notification appears twice
+
+**Solutions**:
+- Ensure mobile webview uses `?versioninfo=mobileapp`
+- Web FCM should be disabled in mobile webview mode
+- Native app should handle all push notifications
+- Check native app notification forwarding logic
+
+#### 5. Token Not Displayed
+**Symptoms**: Click "Enable Notifications" but no token appears
+
+**Solutions**:
+- Check browser notification permission is granted
+- Verify Firebase config in `.env.local`
+- Check browser console for errors
+- Ensure Firebase project is properly configured
+- Try in incognito/private browsing mode
+
+### Getting Help
+
+1. **Check Logs**: Review Event Log section and browser console
+2. **Review Documentation**: See related docs in `soccasio.mobileapps/docs/`
+3. **Check Firebase Console**: Verify project settings and configuration
+4. **Test Isolated Components**: Test web FCM and native bridge separately
+
+---
+
+## 📚 Related Documentation
+
+### Flutter Mobile App
+- 📁 `../soccasio.mobileapps/` - Native Flutter application
+- 📄 `docs/WEBVIEW_BRIDGE.md` - Detailed bridge API documentation
+- 📄 `docs/PUSH_NOTIFICATIONS_GUIDE.md` - FCM implementation guide
+- 📄 `docs/WEBVIEW_PUSH_NOTIFICATION_INTEGRATION.md` - Integration guide
+- 📄 `docs/FCM_LOGOUT_BEST_PRACTICES.md` - Logout mechanism guide
+
+### Additional Resources
+- [Firebase Cloud Messaging Documentation](https://firebase.google.com/docs/cloud-messaging)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Web Push Notifications](https://developer.mozilla.org/en-US/docs/Web/API/Push_API)
+- [Flutter WebView Documentation](https://pub.dev/packages/flutter_inappwebview)
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+<div align="center">
+
+Built with ❤️ using Next.js and Firebase
+
+</div>
