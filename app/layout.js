@@ -1,3 +1,5 @@
+import './globals.css';
+
 export const metadata = {
     title: 'Webview FCM',
     description: 'Firebase Cloud Messaging in Next.js webview',
