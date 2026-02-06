@@ -34,19 +34,37 @@ export default function TokenSubmission({ isNativeApp, token, addToLog }) {
             // Log the exact request body being sent
             addToLog('Request Body JSON', JSON.stringify(requestBody, null, 2));
 
-            const response = await fetch(`${SUPABASE_URL}`, {
+            // Console log for debugging
+            console.group('🔵 FCM Token Submission Request');
+            console.log('URL:', SUPABASE_URL, '?on_conflict=token');
+            console.log('Method:', 'POST');
+            console.log('Headers:', {
+                'apikey': SUPABASE_API_KEY,
+                'Prefer': 'resolution=merge-duplicates',
+                'Content-Type': 'application/json'
+            });
+            console.log('Body:', requestBody);
+            console.log('Body (JSON):', JSON.stringify(requestBody, null, 2));
+            console.groupEnd();
+
+            const response = await fetch(`${SUPABASE_URL}?on_conflict=token`, {
                 method: 'POST',
                 headers: {
                     'apikey': SUPABASE_API_KEY,
                     'Prefer': 'resolution=merge-duplicates',
                     'Content-Type': 'application/json',
-                    // 'Authorization': `Bearer ${SUPABASE_API_KEY}`
                 },
                 body: JSON.stringify(requestBody)
             });
 
             // Get response text first
             const responseText = await response.text();
+
+            // Console log response for debugging
+            console.group('🔴 FCM Token Submission Response');
+            console.log('Status:', response.status, response.statusText);
+            console.log('Response Text:', responseText);
+            console.groupEnd();
 
             // Log response details
             addToLog('Response Status', `${response.status}: ${response.statusText}`);
@@ -159,7 +177,7 @@ export default function TokenSubmission({ isNativeApp, token, addToLog }) {
                                 whiteSpace: 'pre-wrap',
                                 wordBreak: 'break-word'
                             }}>
-                                {`URL: ${SUPABASE_URL}
+                                {`URL: ${SUPABASE_URL}?on_conflict=token
 Method: POST
 Headers:
   - apikey: ${SUPABASE_API_KEY.substring(0, 20)}...
@@ -178,7 +196,7 @@ Body:
             <div style={{ marginTop: 16, fontSize: 12, color: '#666' }}>
                 <strong>API Details:</strong>
                 <div style={{ marginTop: 4 }}>
-                    <div>URL: {SUPABASE_URL}</div>
+                    <div>URL: {SUPABASE_URL}?on_conflict=token</div>
                     <div>Method: POST</div>
                     <div>Headers: apikey, Prefer, Content-Type</div>
                     <div>Conflict Resolution: merge-duplicates on token field</div>
