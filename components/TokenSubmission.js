@@ -31,6 +31,9 @@ export default function TokenSubmission({ isNativeApp, token, addToLog }) {
                 platform: platform
             };
 
+            // Log the exact request body being sent
+            addToLog('Request Body JSON', JSON.stringify(requestBody, null, 2));
+
             const response = await fetch(`${SUPABASE_URL}`, {
                 method: 'POST',
                 headers: {
