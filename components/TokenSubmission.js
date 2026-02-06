@@ -20,6 +20,16 @@ export default function TokenSubmission({ isNativeApp, token, addToLog }) {
             // Determine platform based on environment
             const platform = isNativeApp ? 'mobileapp' : 'web';
 
+            // Log the request details
+            addToLog('Submitting Token', `Platform: ${platform}`);
+            addToLog('Token Preview', `First 50 chars: ${token.substring(0, 50)}...`);
+            addToLog('Token Length', `Total length: ${token.length} chars`);
+
+            const requestBody = {
+                token: token,
+                platform: platform
+            };
+
             const response = await fetch(`${SUPABASE_URL}?on_conflict=token`, {
                 method: 'POST',
                 headers: {
@@ -28,14 +38,15 @@ export default function TokenSubmission({ isNativeApp, token, addToLog }) {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${SUPABASE_API_KEY}`
                 },
-                body: JSON.stringify({
-                    token: token,
-                    platform: platform
-                })
+                body: JSON.stringify(requestBody)
             });
 
             // Get response text first
             const responseText = await response.text();
+
+            // Log response details
+            addToLog('Response Status', `${response.status}: ${response.statusText}`);
+            addToLog('Response Text', responseText.substring(0, 200));
 
             // Try to parse as JSON, if fails use the text
             let data;
@@ -59,6 +70,7 @@ export default function TokenSubmission({ isNativeApp, token, addToLog }) {
                     error: data
                 });
                 addToLog('Submission Error', `Platform: ${platform}, Status: ${response.status}, Error: ${response.statusText}`);
+                addToLog('Full Error Response', JSON.stringify(data));
             }
         } catch (error) {
             setSubmissionResult({
@@ -107,7 +119,7 @@ export default function TokenSubmission({ isNativeApp, token, addToLog }) {
                     <strong style={{ fontSize: 14 }}>
                         {submissionResult.success ? '✓' : '✗'} {submissionResult.message}
                     </strong>
-                    
+
                     {submissionResult.data && (
                         <div style={{ marginTop: 12 }}>
                             <strong style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Response Details:</strong>
@@ -143,7 +155,7 @@ export default function TokenSubmission({ isNativeApp, token, addToLog }) {
                                 whiteSpace: 'pre-wrap',
                                 wordBreak: 'break-word'
                             }}>
-{`URL: ${SUPABASE_URL}?on_conflict=token
+                                {`URL: ${SUPABASE_URL}?on_conflict=token
 Method: POST
 Headers:
   - apikey: ${SUPABASE_API_KEY.substring(0, 20)}...
