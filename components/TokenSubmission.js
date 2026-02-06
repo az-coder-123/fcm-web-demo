@@ -104,10 +104,56 @@ export default function TokenSubmission({ isNativeApp, token, addToLog }) {
                     borderRadius: 4,
                     border: `1px solid ${submissionResult.success ? '#c3e6cb' : '#f5c6cb'}`
                 }}>
-                    <strong>{submissionResult.success ? '✓' : '✗'} {submissionResult.message}</strong>
+                    <strong style={{ fontSize: 14 }}>
+                        {submissionResult.success ? '✓' : '✗'} {submissionResult.message}
+                    </strong>
+                    
                     {submissionResult.data && (
-                        <div style={{ marginTop: 8, fontSize: 12, fontFamily: 'monospace' }}>
-                            Response: {JSON.stringify(submissionResult.data)}
+                        <div style={{ marginTop: 12 }}>
+                            <strong style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Response Details:</strong>
+                            <pre style={{
+                                fontSize: 11,
+                                fontFamily: 'monospace',
+                                backgroundColor: '#fff',
+                                padding: 8,
+                                borderRadius: 4,
+                                border: '1px solid #ddd',
+                                overflow: 'auto',
+                                maxHeight: 300,
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-word'
+                            }}>
+                                {JSON.stringify(submissionResult.data, null, 2)}
+                            </pre>
+                        </div>
+                    )}
+
+                    {submissionResult.error && !submissionResult.success && (
+                        <div style={{ marginTop: 12 }}>
+                            <strong style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Request Sent:</strong>
+                            <pre style={{
+                                fontSize: 11,
+                                fontFamily: 'monospace',
+                                backgroundColor: '#fff',
+                                padding: 8,
+                                borderRadius: 4,
+                                border: '1px solid #ddd',
+                                overflow: 'auto',
+                                maxHeight: 200,
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-word'
+                            }}>
+{`URL: ${SUPABASE_URL}?on_conflict=token
+Method: POST
+Headers:
+  - apikey: ${SUPABASE_API_KEY.substring(0, 20)}...
+  - Prefer: resolution=merge-duplicates
+  - Content-Type: application/json
+  - Authorization: Bearer ${SUPABASE_API_KEY.substring(0, 20)}...
+Body:
+  - token: ${token ? token.substring(0, 50) + '...' : 'null'}
+  - platform: ${isNativeApp ? 'mobileapp' : 'web'}`}
+                            </pre>
                         </div>
                     )}
                 </div>
