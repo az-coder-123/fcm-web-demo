@@ -17,6 +17,7 @@ import NativeBridgeActions from '../components/NativeBridgeActions';
 import NetworkStatus from '../components/NetworkStatus';
 import TestActions from '../components/TestActions';
 import Toast from '../components/Toast';
+import TokenSubmission from '../components/TokenSubmission';
 
 export default function Home() {
     const [token, setToken] = useState(null);
@@ -401,6 +402,12 @@ export default function Home() {
                     navigator.clipboard.writeText(token); 
                     addToLog('Copied', 'Token copied to clipboard'); 
                 }}
+                addToLog={addToLog}
+            />
+
+            <TokenSubmission 
+                isNativeApp={isNativeApp}
+                token={token}
                 addToLog={addToLog}
             />
 
