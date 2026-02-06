@@ -18,7 +18,8 @@ export default function TokenSubmission({ isNativeApp, token, addToLog }) {
 
         try {
             // Determine platform based on environment
-            const platform = isNativeApp ? 'mobileapp' : 'web';
+            // Use 'native' instead of 'mobileapp' to avoid Supabase filter parsing issues
+            const platform = isNativeApp ? 'native' : 'web';
 
             // Log the request details
             addToLog('Submitting Token', `Platform: ${platform}`);
@@ -30,13 +31,13 @@ export default function TokenSubmission({ isNativeApp, token, addToLog }) {
                 platform: platform
             };
 
-            const response = await fetch(`${SUPABASE_URL}?on_conflict=token`, {
+            const response = await fetch(`${SUPABASE_URL}`, {
                 method: 'POST',
                 headers: {
                     'apikey': SUPABASE_API_KEY,
                     'Prefer': 'resolution=merge-duplicates',
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${SUPABASE_API_KEY}`
+                    // 'Authorization': `Bearer ${SUPABASE_API_KEY}`
                 },
                 body: JSON.stringify(requestBody)
             });
@@ -89,7 +90,7 @@ export default function TokenSubmission({ isNativeApp, token, addToLog }) {
             <h2>Submit FCM Token to Supabase</h2>
             <p>
                 Submit your FCM token to the Supabase database to enable push notifications.
-                Platform is automatically detected: <strong>{isNativeApp ? 'mobileapp (Native App)' : 'web (Web Browser)'}</strong>
+                Platform is automatically detected: <strong>{isNativeApp ? 'native (Native App)' : 'web (Web Browser)'}</strong>
             </p>
 
             <button
@@ -155,7 +156,7 @@ export default function TokenSubmission({ isNativeApp, token, addToLog }) {
                                 whiteSpace: 'pre-wrap',
                                 wordBreak: 'break-word'
                             }}>
-                                {`URL: ${SUPABASE_URL}?on_conflict=token
+                                {`URL: ${SUPABASE_URL}
 Method: POST
 Headers:
   - apikey: ${SUPABASE_API_KEY.substring(0, 20)}...
@@ -164,7 +165,7 @@ Headers:
   - Authorization: Bearer ${SUPABASE_API_KEY.substring(0, 20)}...
 Body:
   - token: ${token ? token.substring(0, 50) + '...' : 'null'}
-  - platform: ${isNativeApp ? 'mobileapp' : 'web'}`}
+  - platform: ${isNativeApp ? 'native' : 'web'}`}
                             </pre>
                         </div>
                     )}
