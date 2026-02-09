@@ -247,7 +247,7 @@ export default function Home() {
 
     const addToLog = (type, message) => {
         const timestamp = new Date().toLocaleTimeString();
-        const id = `${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+        const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         setNotificationLog(prev => [
             { id, type, message, timestamp },
             ...prev
@@ -394,19 +394,19 @@ export default function Home() {
             <AppStatus isNativeApp={isNativeApp} appInfo={appInfo} />
             <NetworkStatus networkStatus={networkStatus} />
 
-            <FcmTokenSection 
+            <FcmTokenSection
                 isNativeApp={isNativeApp}
                 token={token}
                 onEnable={handleEnable}
                 onGetNativeToken={handleGetNativeToken}
-                onCopyToken={() => { 
-                    navigator.clipboard.writeText(token); 
-                    addToLog('Copied', 'Token copied to clipboard'); 
+                onCopyToken={() => {
+                    navigator.clipboard.writeText(token);
+                    addToLog('Copied', 'Token copied to clipboard');
                 }}
                 addToLog={addToLog}
             />
 
-            <TokenSubmission 
+            <TokenSubmission
                 isNativeApp={isNativeApp}
                 token={token}
                 addToLog={addToLog}
@@ -430,7 +430,7 @@ export default function Home() {
                 onWebLogout={handleWebLogout}
             />
 
-            <EventLog 
+            <EventLog
                 notificationLog={notificationLog}
                 onClearLog={() => setNotificationLog([])}
             />
