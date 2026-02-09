@@ -11,8 +11,8 @@ import {
 import AppStatus from '../components/AppStatus';
 import ErrorDisplay from '../components/ErrorDisplay';
 import EventLog from '../components/EventLog';
+import ExternalUrlActions from '../components/ExternalUrlActions';
 import FcmTokenSection from '../components/FcmTokenSection';
-import GoogleActions from '../components/GoogleActions';
 import Instructions from '../components/Instructions';
 import NativeBridgeActions from '../components/NativeBridgeActions';
 import NetworkStatus from '../components/NetworkStatus';
@@ -422,7 +422,7 @@ export default function Home() {
                 />
             )}
 
-            <GoogleActions />
+            <ExternalUrlActions />
 
             <TestActions
                 isNativeApp={isNativeApp}
