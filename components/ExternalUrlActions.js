@@ -23,7 +23,7 @@ export default function ExternalUrlActions() {
         openUrlInDefaultBrowser('https://www.google.com');
     };
 
-    const openInternallUrl = async (url) => {
+    const openUrlInInternalBrowser = async (url) => {
         if (isNativeApp) {
             try {
                 const response = await window.flutter_inappwebview.callHandler('openUrlInInternalBrowser', url);
@@ -41,8 +41,8 @@ export default function ExternalUrlActions() {
         }
     };
 
-    const handleOpenInternalUrl = () => {
-        openInternallUrl('https://www.facebook.com');
+    const handleUrlInInternalBrowser = () => {
+        openUrlInInternalBrowser('https://www.facebook.com');
     };
 
     return (
@@ -64,7 +64,7 @@ export default function ExternalUrlActions() {
                     Open URL in Default Browser
                 </button>
                 <button
-                    onClick={handleOpenInternalUrl}
+                    onClick={handleUrlInInternalBrowser}
                     style={{
                         padding: '8px 16px',
                         background: '#4267B2',
