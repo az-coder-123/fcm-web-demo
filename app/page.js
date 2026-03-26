@@ -32,6 +32,10 @@ export default function Home() {
     const [networkStatus, setNetworkStatus] = useState(null);
     const [notificationLog, setNotificationLog] = useState([]);
     const [logoutResult, setLogoutResult] = useState(null);
+    const [biometricSupport, setBiometricSupport] = useState(null);
+    const [biometricPermission, setBiometricPermission] = useState(null);
+    const [resetToken, setResetToken] = useState(null);
+    const [biometricAuthResult, setBiometricAuthResult] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(true);
 
     useEffect(() => {
@@ -226,6 +230,23 @@ export default function Home() {
             }
         };
 
+        const handleBiometricAuthenticated = (event) => {
+            const detail = event.detail;
+            console.log('Biometric authenticated event:', detail);
+            setBiometricAuthResult(detail);
+            if (detail?.resetToken) {
+                setResetToken(detail.resetToken);
+            }
+            addToLog('Biometric Authenticated', JSON.stringify(detail));
+        };
+
+        const handleBiometricAuthenticationFailed = (event) => {
+            const detail = event.detail;
+            console.log('Biometric authentication failed event:', detail);
+            setBiometricAuthResult(detail);
+            addToLog('Biometric Authentication Failed', JSON.stringify(detail));
+        };
+
         listeners.push({ event: 'fcmTokenUpdated', handler: handleFcmTokenUpdated });
         window.addEventListener('fcmTokenUpdated', handleFcmTokenUpdated);
 
@@ -237,6 +258,12 @@ export default function Home() {
 
         listeners.push({ event: 'pushNotificationReceived', handler: handlePushNotificationReceived });
         window.addEventListener('pushNotificationReceived', handlePushNotificationReceived);
+
+        listeners.push({ event: 'biometricAuthenticated', handler: handleBiometricAuthenticated });
+        window.addEventListener('biometricAuthenticated', handleBiometricAuthenticated);
+
+        listeners.push({ event: 'biometricAuthenticationFailed', handler: handleBiometricAuthenticationFailed });
+        window.addEventListener('biometricAuthenticationFailed', handleBiometricAuthenticationFailed);
 
         return () => {
             listeners.forEach(({ event, handler }) => {
@@ -280,6 +307,111 @@ export default function Home() {
         } catch (e) {
             setError(e?.message || String(e));
             addToLog('Native FCM Error', e?.message || String(e));
+        }
+    };
+
+    const handleGetBiometricSupport = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('getBiometricSupport');
+            setBiometricSupport(response);
+            if (response && response.success) {
+                addToLog('Biometric Support', JSON.stringify(response));
+            } else {
+                setError(response?.error || 'Failed to get biometric support');
+                addToLog('Biometric Support Error', response?.error || 'Failed');
+            }
+        } catch (e) {
+            setError(e?.message || String(e));
+            addToLog('Biometric Support Error', e?.message || String(e));
+        }
+    };
+
+    const handleGetBiometricPermissionStatus = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('getBiometricPermissionStatus');
+            setBiometricPermission(response);
+            if (response && response.success) {
+                addToLog('Biometric Permission', JSON.stringify(response));
+            } else {
+                setError(response?.error || 'Failed to get biometric permission status');
+                addToLog('Biometric Permission Error', response?.error || 'Failed');
+            }
+        } catch (e) {
+            setError(e?.message || String(e));
+            addToLog('Biometric Permission Error', e?.message || String(e));
+        }
+    };
+
+    const handleRequestBiometricPermission = async (reason) => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('requestBiometricPermission', reason);
+            setBiometricPermission(response);
+            if (response && response.success) {
+                addToLog('Request Biometric Permission', JSON.stringify(response));
+            } else {
+                setError(response?.error || 'Failed to request biometric permission');
+                addToLog('Request Biometric Permission Error', response?.error || 'Failed');
+            }
+        } catch (e) {
+            setError(e?.message || String(e));
+            addToLog('Request Biometric Permission Error', e?.message || String(e));
+        }
+    };
+
+    const handleBiometricAuthenticate = async (reason) => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('biometricAuthenticate', reason);
+            setBiometricAuthResult(response);
+            if (response && response.success) {
+                addToLog('Biometric Authenticate', JSON.stringify(response));
+                if (response.resetToken) {
+                    setResetToken(response.resetToken);
+                }
+            } else {
+                setError(response?.error || 'Biometric authentication failed');
+                addToLog('Biometric Authenticate Error', response?.error || 'Failed');
+            }
+        } catch (e) {
+            setError(e?.message || String(e));
+            addToLog('Biometric Authenticate Error', e?.message || String(e));
+        }
+    };
+
+    const handleSaveResetToken = async (tokenValue) => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('saveResetToken', tokenValue);
+            if (response && response.success) {
+                setResetToken(tokenValue);
+                addToLog('Save Reset Token', 'Saved reset token to native');
+            } else {
+                setError(response?.error || 'Failed to save reset token');
+                addToLog('Save Reset Token Error', response?.error || 'Failed');
+            }
+        } catch (e) {
+            setError(e?.message || String(e));
+            addToLog('Save Reset Token Error', e?.message || String(e));
+        }
+    };
+
+    const handleGetResetToken = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('getResetToken');
+            if (response && response.success) {
+                setResetToken(response.resetToken || null);
+                addToLog('Get Reset Token', JSON.stringify(response));
+            } else {
+                setError(response?.error || 'Failed to get reset token');
+                addToLog('Get Reset Token Error', response?.error || 'Failed');
+            }
+        } catch (e) {
+            setError(e?.message || String(e));
+            addToLog('Get Reset Token Error', e?.message || String(e));
         }
     };
 
@@ -419,6 +551,16 @@ export default function Home() {
                     onChangeLocale={handleChangeLocale}
                     onLogout={handleLogout}
                     onSendLog={handleLog}
+                    onGetBiometricSupport={handleGetBiometricSupport}
+                    onGetBiometricPermissionStatus={handleGetBiometricPermissionStatus}
+                    onRequestBiometricPermission={handleRequestBiometricPermission}
+                    onBiometricAuthenticate={handleBiometricAuthenticate}
+                    onGetResetToken={handleGetResetToken}
+                    onSaveResetToken={handleSaveResetToken}
+                    biometricSupport={biometricSupport}
+                    biometricPermission={biometricPermission}
+                    resetToken={resetToken}
+                    biometricAuthResult={biometricAuthResult}
                 />
             )}
 

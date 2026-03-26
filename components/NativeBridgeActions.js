@@ -3,7 +3,17 @@ export default function NativeBridgeActions({
     logoutResult,
     onChangeLocale,
     onLogout,
-    onSendLog
+    onSendLog,
+    onGetBiometricSupport,
+    onGetBiometricPermissionStatus,
+    onRequestBiometricPermission,
+    onBiometricAuthenticate,
+    onGetResetToken,
+    onSaveResetToken,
+    biometricSupport,
+    biometricPermission,
+    resetToken,
+    biometricAuthResult
 }) {
     return (
         <section style={{ marginBottom: 24 }}>
@@ -64,6 +74,51 @@ export default function NativeBridgeActions({
                         Error
                     </button>
                 </div>
+            </div>
+
+            {/* Biometric Actions */}
+            <div style={{ marginBottom: 16 }}>
+                <h3>Biometric Actions</h3>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={onGetBiometricSupport} style={{ padding: '8px 12px' }}>
+                        Get Biometric Support
+                    </button>
+                    <button onClick={onGetBiometricPermissionStatus} style={{ padding: '8px 12px' }}>
+                        Get Biometric Permission
+                    </button>
+                    <button onClick={() => onRequestBiometricPermission('Please allow biometrics to continue')} style={{ padding: '8px 12px' }}>
+                        Request Biometric Permission
+                    </button>
+                    <button onClick={() => onBiometricAuthenticate('Authenticate with biometrics')} style={{ padding: '8px 12px' }}>
+                        Biometric Authenticate
+                    </button>
+                    <button onClick={onGetResetToken} style={{ padding: '8px 12px' }}>
+                        Get Reset Token
+                    </button>
+                    <button onClick={() => onSaveResetToken('web-demo-reset-token')} style={{ padding: '8px 12px' }}>
+                        Save Reset Token
+                    </button>
+                </div>
+                {typeof biometricSupport === 'object' && (
+                    <p style={{ marginTop: 8, fontSize: 14 }}>
+                        Biometric support: {JSON.stringify(biometricSupport)}
+                    </p>
+                )}
+                {typeof biometricPermission === 'object' && (
+                    <p style={{ marginTop: 8, fontSize: 14 }}>
+                        Biometric permission: {JSON.stringify(biometricPermission)}
+                    </p>
+                )}
+                {resetToken && (
+                    <p style={{ marginTop: 8, fontSize: 14 }}>
+                        Reset token: {resetToken}
+                    </p>
+                )}
+                {biometricAuthResult && (
+                    <p style={{ marginTop: 8, fontSize: 14 }}>
+                        Biometric auth status: {JSON.stringify(biometricAuthResult)}
+                    </p>
+                )}
             </div>
         </section>
     );
