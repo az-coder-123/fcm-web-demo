@@ -34,6 +34,7 @@ export default function Home() {
     const [logoutResult, setLogoutResult] = useState(null);
     const [biometricSupport, setBiometricSupport] = useState(null);
     const [biometricPermission, setBiometricPermission] = useState(null);
+    const [refreshTokenOwnerKey, setRefreshTokenOwnerKey] = useState(null);
     const [refreshToken, setRefreshToken] = useState(null);
     const [biometricAuthResult, setBiometricAuthResult] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -234,6 +235,9 @@ export default function Home() {
             const detail = event.detail;
             console.log('Biometric authenticated event:', detail);
             setBiometricAuthResult(detail);
+            if (detail?.key) {
+                setRefreshTokenOwnerKey(detail.key);
+            }
             if (detail?.refreshToken) {
                 setRefreshToken(detail.refreshToken);
             }
@@ -361,13 +365,21 @@ export default function Home() {
         }
     };
 
-    const handleBiometricAuthenticate = async (reason) => {
+    const handleBiometricAuthenticate = async (keyValue, reason) => {
         if (!window.flutter_inappwebview) return;
         try {
-            const response = await window.flutter_inappwebview.callHandler('biometricAuthenticate', reason);
+            const key = (keyValue || '').trim();
+            if (!key) {
+                setError('Key is required');
+                addToLog('Biometric Authenticate Error', 'Key is required');
+                return;
+            }
+
+            const response = await window.flutter_inappwebview.callHandler('biometricAuthenticate', key, reason);
             setBiometricAuthResult(response);
             if (response && response.success) {
                 addToLog('Biometric Authenticate', JSON.stringify(response));
+                setRefreshTokenOwnerKey(response.key || key);
                 if (response.refreshToken) {
                     setRefreshToken(response.refreshToken);
                 }
@@ -381,28 +393,45 @@ export default function Home() {
         }
     };
 
-    const handleSaveRefreshToken = async (tokenValue) => {
+    const handleSaveRefreshToken = async (keyValue, tokenValue) => {
         if (!window.flutter_inappwebview) return;
         try {
-            const response = await window.flutter_inappwebview.callHandler('saveRefreshToken', tokenValue);
+            const key = (keyValue || '').trim();
+            const token = (tokenValue || '').trim();
+            if (!key || !token) {
+                setError('Key and refresh token are required');
+                addToLog('Save Refresh Token Error', 'Key and refresh token are required');
+                return;
+            }
+
+            const response = await window.flutter_inappwebview.callHandler('saveRefreshToken', key, token);
             if (response && response.success) {
-                setRefreshToken(tokenValue);
-                addToLog('Save Refresh Token', 'Saved refresh token to native');
+                setRefreshTokenOwnerKey(key);
+                setRefreshToken(token);
+                addToLog('Save Refresh Token', `Saved key=${key} refresh token to native`);
             } else {
                 setError(response?.error || 'Failed to save refresh token');
                 addToLog('Save Refresh Token Error', response?.error || 'Failed');
             }
         } catch (e) {
             setError(e?.message || String(e));
-            addToLog('Save Reset Token Error', e?.message || String(e));
+            addToLog('Save Refresh Token Error', e?.message || String(e));
         }
     };
 
-    const handleGetRefreshToken = async () => {
+    const handleGetRefreshToken = async (keyValue) => {
         if (!window.flutter_inappwebview) return;
         try {
-            const response = await window.flutter_inappwebview.callHandler('getRefreshToken');
+            const key = (keyValue || '').trim();
+            if (!key) {
+                setError('Key is required');
+                addToLog('Get Refresh Token Error', 'Key is required');
+                return;
+            }
+
+            const response = await window.flutter_inappwebview.callHandler('getRefreshToken', key);
             if (response && response.success) {
+                setRefreshTokenOwnerKey(response.storedKey || key);
                 setRefreshToken(response.refreshToken || null);
                 addToLog('Get Refresh Token', JSON.stringify(response));
             } else {
@@ -411,7 +440,7 @@ export default function Home() {
             }
         } catch (e) {
             setError(e?.message || String(e));
-            addToLog('Get Reset Token Error', e?.message || String(e));
+            addToLog('Get Refresh Token Error', e?.message || String(e));
         }
     };
 
@@ -559,6 +588,7 @@ export default function Home() {
                     onSaveRefreshToken={handleSaveRefreshToken}
                     biometricSupport={biometricSupport}
                     biometricPermission={biometricPermission}
+                    refreshTokenOwnerKey={refreshTokenOwnerKey}
                     refreshToken={refreshToken}
                     biometricAuthResult={biometricAuthResult}
                 />

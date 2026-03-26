@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 export default function NativeBridgeActions({ 
     currentLocale, 
     logoutResult,
@@ -12,9 +14,13 @@ export default function NativeBridgeActions({
     onSaveRefreshToken,
     biometricSupport,
     biometricPermission,
+    refreshTokenOwnerKey,
     refreshToken,
     biometricAuthResult
 }) {
+    const [keyInput, setKeyInput] = useState('demo@example.com');
+    const [tokenInput, setTokenInput] = useState('web-demo-refresh-token');
+
     return (
         <section style={{ marginBottom: 24 }}>
             <h2>Native Bridge Actions</h2>
@@ -89,15 +95,30 @@ export default function NativeBridgeActions({
                     <button onClick={() => onRequestBiometricPermission('Please allow biometrics to continue')} style={{ padding: '8px 12px' }}>
                         Request Biometric Permission
                     </button>
-                    <button onClick={() => onBiometricAuthenticate('Authenticate with biometrics')} style={{ padding: '8px 12px' }}>
+                    <button onClick={() => onBiometricAuthenticate(keyInput, 'Authenticate with biometrics')} style={{ padding: '8px 12px' }}>
                         Biometric Authenticate
                     </button>
-                    <button onClick={onGetRefreshToken} style={{ padding: '8px 12px' }}>
+                    <button onClick={() => onGetRefreshToken(keyInput)} style={{ padding: '8px 12px' }}>
                         Get Refresh Token
                     </button>
-                    <button onClick={() => onSaveRefreshToken('web-demo-refresh-token')} style={{ padding: '8px 12px' }}>
+                    <button onClick={() => onSaveRefreshToken(keyInput, tokenInput)} style={{ padding: '8px 12px' }}>
                         Save Refresh Token
                     </button>
+                </div>
+
+                <div style={{ marginTop: 12, display: 'grid', gap: 8, maxWidth: 520 }}>
+                    <input
+                        value={keyInput}
+                        onChange={(e) => setKeyInput(e.target.value)}
+                        placeholder="Key (email or phone)"
+                        style={{ padding: '8px 10px' }}
+                    />
+                    <input
+                        value={tokenInput}
+                        onChange={(e) => setTokenInput(e.target.value)}
+                        placeholder="Refresh token"
+                        style={{ padding: '8px 10px' }}
+                    />
                 </div>
                 {typeof biometricSupport === 'object' && (
                     <p style={{ marginTop: 8, fontSize: 14 }}>
@@ -111,6 +132,8 @@ export default function NativeBridgeActions({
                 )}
                 {refreshToken && (
                     <p style={{ marginTop: 8, fontSize: 14 }}>
+                        Key: {refreshTokenOwnerKey || '(unknown)'}
+                        <br />
                         Refresh token: {refreshToken}
                     </p>
                 )}
