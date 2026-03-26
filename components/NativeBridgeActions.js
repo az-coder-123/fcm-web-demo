@@ -8,11 +8,11 @@ export default function NativeBridgeActions({
     onGetBiometricPermissionStatus,
     onRequestBiometricPermission,
     onBiometricAuthenticate,
-    onGetResetToken,
-    onSaveResetToken,
+    onGetRefreshToken,
+    onSaveRefreshToken,
     biometricSupport,
     biometricPermission,
-    resetToken,
+    refreshToken,
     biometricAuthResult
 }) {
     return (
@@ -92,11 +92,11 @@ export default function NativeBridgeActions({
                     <button onClick={() => onBiometricAuthenticate('Authenticate with biometrics')} style={{ padding: '8px 12px' }}>
                         Biometric Authenticate
                     </button>
-                    <button onClick={onGetResetToken} style={{ padding: '8px 12px' }}>
-                        Get Reset Token
+                    <button onClick={onGetRefreshToken} style={{ padding: '8px 12px' }}>
+                        Get Refresh Token
                     </button>
-                    <button onClick={() => onSaveResetToken('web-demo-reset-token')} style={{ padding: '8px 12px' }}>
-                        Save Reset Token
+                    <button onClick={() => onSaveRefreshToken('web-demo-refresh-token')} style={{ padding: '8px 12px' }}>
+                        Save Refresh Token
                     </button>
                 </div>
                 {typeof biometricSupport === 'object' && (
@@ -109,9 +109,9 @@ export default function NativeBridgeActions({
                         Biometric permission: {JSON.stringify(biometricPermission)}
                     </p>
                 )}
-                {resetToken && (
+                {refreshToken && (
                     <p style={{ marginTop: 8, fontSize: 14 }}>
-                        Reset token: {resetToken}
+                        Refresh token: {refreshToken}
                     </p>
                 )}
                 {biometricAuthResult && (

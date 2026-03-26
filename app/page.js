@@ -34,7 +34,7 @@ export default function Home() {
     const [logoutResult, setLogoutResult] = useState(null);
     const [biometricSupport, setBiometricSupport] = useState(null);
     const [biometricPermission, setBiometricPermission] = useState(null);
-    const [resetToken, setResetToken] = useState(null);
+    const [refreshToken, setRefreshToken] = useState(null);
     const [biometricAuthResult, setBiometricAuthResult] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(true);
 
@@ -234,8 +234,8 @@ export default function Home() {
             const detail = event.detail;
             console.log('Biometric authenticated event:', detail);
             setBiometricAuthResult(detail);
-            if (detail?.resetToken) {
-                setResetToken(detail.resetToken);
+            if (detail?.refreshToken) {
+                setRefreshToken(detail.refreshToken);
             }
             addToLog('Biometric Authenticated', JSON.stringify(detail));
         };
@@ -368,8 +368,8 @@ export default function Home() {
             setBiometricAuthResult(response);
             if (response && response.success) {
                 addToLog('Biometric Authenticate', JSON.stringify(response));
-                if (response.resetToken) {
-                    setResetToken(response.resetToken);
+                if (response.refreshToken) {
+                    setRefreshToken(response.refreshToken);
                 }
             } else {
                 setError(response?.error || 'Biometric authentication failed');
@@ -381,16 +381,16 @@ export default function Home() {
         }
     };
 
-    const handleSaveResetToken = async (tokenValue) => {
+    const handleSaveRefreshToken = async (tokenValue) => {
         if (!window.flutter_inappwebview) return;
         try {
-            const response = await window.flutter_inappwebview.callHandler('saveResetToken', tokenValue);
+            const response = await window.flutter_inappwebview.callHandler('saveRefreshToken', tokenValue);
             if (response && response.success) {
-                setResetToken(tokenValue);
-                addToLog('Save Reset Token', 'Saved reset token to native');
+                setRefreshToken(tokenValue);
+                addToLog('Save Refresh Token', 'Saved refresh token to native');
             } else {
-                setError(response?.error || 'Failed to save reset token');
-                addToLog('Save Reset Token Error', response?.error || 'Failed');
+                setError(response?.error || 'Failed to save refresh token');
+                addToLog('Save Refresh Token Error', response?.error || 'Failed');
             }
         } catch (e) {
             setError(e?.message || String(e));
@@ -398,16 +398,16 @@ export default function Home() {
         }
     };
 
-    const handleGetResetToken = async () => {
+    const handleGetRefreshToken = async () => {
         if (!window.flutter_inappwebview) return;
         try {
-            const response = await window.flutter_inappwebview.callHandler('getResetToken');
+            const response = await window.flutter_inappwebview.callHandler('getRefreshToken');
             if (response && response.success) {
-                setResetToken(response.resetToken || null);
-                addToLog('Get Reset Token', JSON.stringify(response));
+                setRefreshToken(response.refreshToken || null);
+                addToLog('Get Refresh Token', JSON.stringify(response));
             } else {
-                setError(response?.error || 'Failed to get reset token');
-                addToLog('Get Reset Token Error', response?.error || 'Failed');
+                setError(response?.error || 'Failed to get refresh token');
+                addToLog('Get Refresh Token Error', response?.error || 'Failed');
             }
         } catch (e) {
             setError(e?.message || String(e));
@@ -555,11 +555,11 @@ export default function Home() {
                     onGetBiometricPermissionStatus={handleGetBiometricPermissionStatus}
                     onRequestBiometricPermission={handleRequestBiometricPermission}
                     onBiometricAuthenticate={handleBiometricAuthenticate}
-                    onGetResetToken={handleGetResetToken}
-                    onSaveResetToken={handleSaveResetToken}
+                    onGetRefreshToken={handleGetRefreshToken}
+                    onSaveRefreshToken={handleSaveRefreshToken}
                     biometricSupport={biometricSupport}
                     biometricPermission={biometricPermission}
-                    resetToken={resetToken}
+                    refreshToken={refreshToken}
                     biometricAuthResult={biometricAuthResult}
                 />
             )}
