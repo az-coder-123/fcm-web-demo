@@ -17,6 +17,8 @@ export default function NativeBridgeActions({
     onRequestCameraPermission,
     onGetMicrophonePermissionStatus,
     onRequestMicrophonePermission,
+    onGetPhotoPermissionStatus,
+    onRequestPhotoPermission,
     onGetRefreshToken,
     onSaveRefreshToken,
     biometricSupport,
@@ -28,6 +30,8 @@ export default function NativeBridgeActions({
     cameraError,
     microphonePermission,
     microphoneError,
+    photoPermission,
+    photoError,
     refreshTokenOwnerKey,
     refreshToken,
     biometricAuthResult,
@@ -290,6 +294,53 @@ export default function NativeBridgeActions({
                 {microphoneError && (
                     <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
                         Microphone error: {microphoneError}
+                    </p>
+                )}
+            </div>
+
+            {/* Photo Library Permission Actions */}
+            <div style={{ marginBottom: 16 }}>
+                <h3>Photo Library Permission Actions</h3>
+                {!isNativeApp && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: '#b71c1c' }}>
+                        Lưu ý: chức năng truy cập thư viện ảnh cần chạy trong mobile app WebView. Nếu đang chạy trên trình duyệt thông thường, các nút sẽ không thực hiện được vì không có bridge.
+                    </p>
+                )}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={onGetPhotoPermissionStatus} style={{ padding: '8px 12px' }}>
+                        Get Photo Permission Status
+                    </button>
+                    <button onClick={onRequestPhotoPermission} style={{ padding: '8px 12px' }}>
+                        Request Photo Permission
+                    </button>
+                </div>
+
+                {photoPermission && photoPermission.isGranted === false && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'orange' }}>
+                        Photo permission chưa được cấp. Hãy yêu cầu quyền từ app (Request Photo Permission) hoặc mở lại Settings.
+                    </p>
+                )}
+
+                {photoPermission && photoPermission.isGranted === true && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'green' }}>
+                        Photo permission đã được cấp.
+                    </p>
+                )}
+
+                {photoPermission && photoPermission.isLimited && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'orange' }}>
+                        Quyền truy cập "Giới hạn" (Limited): người dùng đã chọn một số ảnh cụ thể.
+                    </p>
+                )}
+
+                {photoPermission && (
+                    <p style={{ marginTop: 8, fontSize: 14 }}>
+                        Photo permission: {JSON.stringify(photoPermission)}
+                    </p>
+                )}
+                {photoError && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
+                        Photo error: {photoError}
                     </p>
                 )}
             </div>

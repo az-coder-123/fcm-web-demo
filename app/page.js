@@ -41,6 +41,8 @@ export default function Home() {
     const [cameraError, setCameraError] = useState(null);
     const [microphonePermission, setMicrophonePermission] = useState(null);
     const [microphoneError, setMicrophoneError] = useState(null);
+    const [photoPermission, setPhotoPermission] = useState(null);
+    const [photoError, setPhotoError] = useState(null);
     const [refreshTokenOwnerKey, setRefreshTokenOwnerKey] = useState(null);
     const [refreshToken, setRefreshToken] = useState(null);
     const [biometricAuthResult, setBiometricAuthResult] = useState(null);
@@ -559,6 +561,32 @@ export default function Home() {
         }
     };
 
+    const handleGetPhotoPermissionStatus = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('getPhotoPermissionStatus');
+            setPhotoPermission(response);
+            setPhotoError(null);
+            addToLog('Photo Permission Status', JSON.stringify(response));
+        } catch (e) {
+            setPhotoError(e?.message || String(e));
+            addToLog('Photo Permission Status Error', e?.message || String(e));
+        }
+    };
+
+    const handleRequestPhotoPermission = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('requestPhotoPermission');
+            setPhotoPermission(response);
+            setPhotoError(null);
+            addToLog('Request Photo Permission', JSON.stringify(response));
+        } catch (e) {
+            setPhotoError(e?.message || String(e));
+            addToLog('Request Photo Permission Error', e?.message || String(e));
+        }
+    };
+
     const handleChangeLocale = async (lang) => {
         if (!window.flutter_inappwebview) return;
         try {
@@ -704,6 +732,8 @@ export default function Home() {
                 onRequestCameraPermission={handleRequestCameraPermission}
                 onGetMicrophonePermissionStatus={handleGetMicrophonePermissionStatus}
                 onRequestMicrophonePermission={handleRequestMicrophonePermission}
+                onGetPhotoPermissionStatus={handleGetPhotoPermissionStatus}
+                onRequestPhotoPermission={handleRequestPhotoPermission}
                 onBiometricAuthenticate={handleBiometricAuthenticate}
                 onGetRefreshToken={handleGetRefreshToken}
                 onSaveRefreshToken={handleSaveRefreshToken}
@@ -716,6 +746,8 @@ export default function Home() {
                 cameraError={cameraError}
                 microphonePermission={microphonePermission}
                 microphoneError={microphoneError}
+                photoPermission={photoPermission}
+                photoError={photoError}
                 refreshTokenOwnerKey={refreshTokenOwnerKey}
                 refreshToken={refreshToken}
                 biometricAuthResult={biometricAuthResult}
