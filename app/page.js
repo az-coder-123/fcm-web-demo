@@ -34,6 +34,9 @@ export default function Home() {
     const [logoutResult, setLogoutResult] = useState(null);
     const [biometricSupport, setBiometricSupport] = useState(null);
     const [biometricPermission, setBiometricPermission] = useState(null);
+    const [locationPermission, setLocationPermission] = useState(null);
+    const [location, setLocation] = useState(null);
+    const [locationError, setLocationError] = useState(null);
     const [refreshTokenOwnerKey, setRefreshTokenOwnerKey] = useState(null);
     const [refreshToken, setRefreshToken] = useState(null);
     const [biometricAuthResult, setBiometricAuthResult] = useState(null);
@@ -81,6 +84,10 @@ export default function Home() {
     }, []);
 
     const checkNativeBridge = async () => {
+        if (window.flutter_inappwebview) {
+            setIsNativeApp(true);
+        }
+
         try {
             if (window.flutter_inappwebview) {
                 const info = await window.flutter_inappwebview.callHandler('getAppInfo');
@@ -105,10 +112,16 @@ export default function Home() {
                             /* ignore */
                         }
                     }
+                } else {
+                    // still considered native webview when flutter_inappwebview exists
+                    setIsNativeApp(true);
                 }
             }
         } catch (err) {
             console.log('Not running in native app or bridge not ready:', err);
+            if (window.flutter_inappwebview) {
+                setIsNativeApp(true);
+            }
             try {
                 addToLog('Native Bridge', `Bridge not available or error: ${err?.message || String(err)}`);
             } catch (e) {
@@ -444,6 +457,52 @@ export default function Home() {
         }
     };
 
+    const handleGetLocationPermissionStatus = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('getLocationPermissionStatus');
+            setLocationPermission(response);
+            setLocationError(null);
+            addToLog('Location Permission Status', JSON.stringify(response));
+        } catch (e) {
+            setLocationError(e?.message || String(e));
+            addToLog('Location Permission Status Error', e?.message || String(e));
+        }
+    };
+
+    const handleRequestLocationPermission = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('requestLocationPermission');
+            setLocationPermission(response);
+            setLocationError(null);
+            addToLog('Request Location Permission', JSON.stringify(response));
+        } catch (e) {
+            setLocationError(e?.message || String(e));
+            addToLog('Request Location Permission Error', e?.message || String(e));
+        }
+    };
+
+    const handleGetLocation = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('getLocation');
+            if (response && response.success) {
+                setLocation(response);
+                setLocationError(null);
+                addToLog('Get Location', JSON.stringify(response));
+            } else {
+                setLocation(null);
+                setLocationError(response?.error || 'Failed to get location');
+                addToLog('Get Location Error', response?.error || 'Failed');
+            }
+        } catch (e) {
+            setLocation(null);
+            setLocationError(e?.message || String(e));
+            addToLog('Get Location Exception', e?.message || String(e));
+        }
+    };
+
     const handleChangeLocale = async (lang) => {
         if (!window.flutter_inappwebview) return;
         try {
@@ -573,26 +632,31 @@ export default function Home() {
                 addToLog={addToLog}
             />
 
-            {isNativeApp && (
-                <NativeBridgeActions
-                    currentLocale={currentLocale}
-                    logoutResult={logoutResult}
-                    onChangeLocale={handleChangeLocale}
-                    onLogout={handleLogout}
-                    onSendLog={handleLog}
-                    onGetBiometricSupport={handleGetBiometricSupport}
-                    onGetBiometricPermissionStatus={handleGetBiometricPermissionStatus}
-                    onRequestBiometricPermission={handleRequestBiometricPermission}
-                    onBiometricAuthenticate={handleBiometricAuthenticate}
-                    onGetRefreshToken={handleGetRefreshToken}
-                    onSaveRefreshToken={handleSaveRefreshToken}
-                    biometricSupport={biometricSupport}
-                    biometricPermission={biometricPermission}
-                    refreshTokenOwnerKey={refreshTokenOwnerKey}
-                    refreshToken={refreshToken}
-                    biometricAuthResult={biometricAuthResult}
-                />
-            )}
+            <NativeBridgeActions
+                currentLocale={currentLocale}
+                logoutResult={logoutResult}
+                onChangeLocale={handleChangeLocale}
+                onLogout={handleLogout}
+                onSendLog={handleLog}
+                onGetBiometricSupport={handleGetBiometricSupport}
+                onGetBiometricPermissionStatus={handleGetBiometricPermissionStatus}
+                onRequestBiometricPermission={handleRequestBiometricPermission}
+                onGetLocationPermissionStatus={handleGetLocationPermissionStatus}
+                onRequestLocationPermission={handleRequestLocationPermission}
+                onGetLocation={handleGetLocation}
+                onBiometricAuthenticate={handleBiometricAuthenticate}
+                onGetRefreshToken={handleGetRefreshToken}
+                onSaveRefreshToken={handleSaveRefreshToken}
+                biometricSupport={biometricSupport}
+                biometricPermission={biometricPermission}
+                locationPermission={locationPermission}
+                location={location}
+                locationError={locationError}
+                refreshTokenOwnerKey={refreshTokenOwnerKey}
+                refreshToken={refreshToken}
+                biometricAuthResult={biometricAuthResult}
+                isNativeApp={isNativeApp}
+            />
 
             <ExternalUrlActions />
 
@@ -610,6 +674,42 @@ export default function Home() {
             <ErrorDisplay error={error} />
             <Toast toast={toast} onClose={() => setToast(null)} />
             <Instructions />
+
+            <button
+                onClick={() => window.location.reload()}
+                style={{
+                    position: 'fixed',
+                    right: 20,
+                    bottom: 20,
+                    width: 56,
+                    height: 56,
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: '#1e88e5',
+                    color: 'white',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                    cursor: 'pointer',
+                    zIndex: 9999,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+                title="Reload page"
+                aria-label="Reload page"
+            >
+                <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path d="M13 3a9 9 0 0 0-8.8 6.9" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M5 7V3h4" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M11 21a9 9 0 0 0 8.8-6.9" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M19 17v4h-4" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+            </button>
         </main>
     );
 }

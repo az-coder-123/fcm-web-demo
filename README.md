@@ -345,6 +345,9 @@ window.dispatchEvent(new CustomEvent('pushNotificationReceived', {
 | `getLocale` | Get current language | None | `{success, languageCode, countryCode}` |
 | `logout` | Delete FCM token | None | `{success, error}` |
 | `log` | Send log to native | `message`, `level` | `{success}` |
+| `getLocationPermissionStatus` | Get location permission state from native | None | `{success, permission, isGranted, error}` |
+| `requestLocationPermission` | Request location permission by native dialog | None | `{success, permission, isGranted, error}` |
+| `getLocation` | Get current position from native (if granted) | None | `{success, latitude, longitude, accuracy, altitude?, heading?, speed?, timestamp?, error}` |
 
 ### Native Bridge Events
 

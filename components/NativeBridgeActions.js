@@ -10,13 +10,20 @@ export default function NativeBridgeActions({
     onGetBiometricPermissionStatus,
     onRequestBiometricPermission,
     onBiometricAuthenticate,
+    onGetLocationPermissionStatus,
+    onRequestLocationPermission,
+    onGetLocation,
     onGetRefreshToken,
     onSaveRefreshToken,
     biometricSupport,
     biometricPermission,
+    locationPermission,
+    location,
+    locationError,
     refreshTokenOwnerKey,
     refreshToken,
-    biometricAuthResult
+    biometricAuthResult,
+    isNativeApp
 }) {
     const [keyInput, setKeyInput] = useState('demo@example.com');
     const [tokenInput, setTokenInput] = useState('web-demo-refresh-token');
@@ -140,6 +147,59 @@ export default function NativeBridgeActions({
                 {biometricAuthResult && (
                     <p style={{ marginTop: 8, fontSize: 14 }}>
                         Biometric auth status: {JSON.stringify(biometricAuthResult)}
+                    </p>
+                )}
+            </div>
+
+            {/* Location Actions */}
+            <div style={{ marginBottom: 16 }}>
+                <h3>Location Actions</h3>
+                {!isNativeApp && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: '#b71c1c' }}>
+                        Lưu ý: chức năng location cần chạy trong mobile app WebView. Nếu đang chạy trên trình duyệt thông thường, các nút sẽ không thực hiện được vì không có bridge.
+                    </p>
+                )}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={onGetLocationPermissionStatus} style={{ padding: '8px 12px' }}>
+                        Get Location Permission Status
+                    </button>
+                    <button onClick={onRequestLocationPermission} style={{ padding: '8px 12px' }}>
+                        Request Location Permission
+                    </button>
+                    <button
+                        onClick={onGetLocation}
+                        style={{ padding: '8px 12px' }}
+                        disabled={locationPermission && !locationPermission.isGranted}
+                    >
+                        Get Current Location
+                    </button>
+                </div>
+
+                {locationPermission && locationPermission.isGranted === false && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'orange' }}>
+                        Location permission chưa được cấp. Hãy yêu cầu quyền từ app (Request Location Permission) hoặc mở lại Settings.
+                    </p>
+                )}
+
+                {locationPermission && locationPermission.isGranted === true && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'green' }}>
+                        Location permission đã được cấp.
+                    </p>
+                )}
+
+                {locationPermission && (
+                    <p style={{ marginTop: 8, fontSize: 14 }}>
+                        Location permission: {JSON.stringify(locationPermission)}
+                    </p>
+                )}
+                {location && location.success && (
+                    <p style={{ marginTop: 8, fontSize: 14 }}>
+                        Found location: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)} (accuracy: {location.accuracy} m)
+                    </p>
+                )}
+                {locationError && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
+                        Location error: {locationError}
                     </p>
                 )}
             </div>
