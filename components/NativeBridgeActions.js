@@ -13,6 +13,10 @@ export default function NativeBridgeActions({
     onGetLocationPermissionStatus,
     onRequestLocationPermission,
     onGetLocation,
+    onGetCameraPermissionStatus,
+    onRequestCameraPermission,
+    onGetMicrophonePermissionStatus,
+    onRequestMicrophonePermission,
     onGetRefreshToken,
     onSaveRefreshToken,
     biometricSupport,
@@ -20,6 +24,10 @@ export default function NativeBridgeActions({
     locationPermission,
     location,
     locationError,
+    cameraPermission,
+    cameraError,
+    microphonePermission,
+    microphoneError,
     refreshTokenOwnerKey,
     refreshToken,
     biometricAuthResult,
@@ -200,6 +208,88 @@ export default function NativeBridgeActions({
                 {locationError && (
                     <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
                         Location error: {locationError}
+                    </p>
+                )}
+            </div>
+
+            {/* Camera Permission Actions */}
+            <div style={{ marginBottom: 16 }}>
+                <h3>Camera Permission Actions</h3>
+                {!isNativeApp && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: '#b71c1c' }}>
+                        Lưu ý: chức năng camera cần chạy trong mobile app WebView. Nếu đang chạy trên trình duyệt thông thường, các nút sẽ không thực hiện được vì không có bridge.
+                    </p>
+                )}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={onGetCameraPermissionStatus} style={{ padding: '8px 12px' }}>
+                        Get Camera Permission Status
+                    </button>
+                    <button onClick={onRequestCameraPermission} style={{ padding: '8px 12px' }}>
+                        Request Camera Permission
+                    </button>
+                </div>
+
+                {cameraPermission && cameraPermission.isGranted === false && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'orange' }}>
+                        Camera permission chưa được cấp. Hãy yêu cầu quyền từ app (Request Camera Permission) hoặc mở lại Settings.
+                    </p>
+                )}
+
+                {cameraPermission && cameraPermission.isGranted === true && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'green' }}>
+                        Camera permission đã được cấp.
+                    </p>
+                )}
+
+                {cameraPermission && (
+                    <p style={{ marginTop: 8, fontSize: 14 }}>
+                        Camera permission: {JSON.stringify(cameraPermission)}
+                    </p>
+                )}
+                {cameraError && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
+                        Camera error: {cameraError}
+                    </p>
+                )}
+            </div>
+
+            {/* Microphone Permission Actions */}
+            <div style={{ marginBottom: 16 }}>
+                <h3>Microphone Permission Actions</h3>
+                {!isNativeApp && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: '#b71c1c' }}>
+                        Lưu ý: chức năng microphone cần chạy trong mobile app WebView. Nếu đang chạy trên trình duyệt thông thường, các nút sẽ không thực hiện được vì không có bridge.
+                    </p>
+                )}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={onGetMicrophonePermissionStatus} style={{ padding: '8px 12px' }}>
+                        Get Microphone Permission Status
+                    </button>
+                    <button onClick={onRequestMicrophonePermission} style={{ padding: '8px 12px' }}>
+                        Request Microphone Permission
+                    </button>
+                </div>
+
+                {microphonePermission && microphonePermission.isGranted === false && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'orange' }}>
+                        Microphone permission chưa được cấp. Hãy yêu cầu quyền từ app (Request Microphone Permission) hoặc mở lại Settings.
+                    </p>
+                )}
+
+                {microphonePermission && microphonePermission.isGranted === true && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'green' }}>
+                        Microphone permission đã được cấp.
+                    </p>
+                )}
+
+                {microphonePermission && (
+                    <p style={{ marginTop: 8, fontSize: 14 }}>
+                        Microphone permission: {JSON.stringify(microphonePermission)}
+                    </p>
+                )}
+                {microphoneError && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
+                        Microphone error: {microphoneError}
                     </p>
                 )}
             </div>

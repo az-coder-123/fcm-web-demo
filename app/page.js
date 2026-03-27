@@ -37,6 +37,10 @@ export default function Home() {
     const [locationPermission, setLocationPermission] = useState(null);
     const [location, setLocation] = useState(null);
     const [locationError, setLocationError] = useState(null);
+    const [cameraPermission, setCameraPermission] = useState(null);
+    const [cameraError, setCameraError] = useState(null);
+    const [microphonePermission, setMicrophonePermission] = useState(null);
+    const [microphoneError, setMicrophoneError] = useState(null);
     const [refreshTokenOwnerKey, setRefreshTokenOwnerKey] = useState(null);
     const [refreshToken, setRefreshToken] = useState(null);
     const [biometricAuthResult, setBiometricAuthResult] = useState(null);
@@ -503,6 +507,58 @@ export default function Home() {
         }
     };
 
+    const handleGetCameraPermissionStatus = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('getCameraPermissionStatus');
+            setCameraPermission(response);
+            setCameraError(null);
+            addToLog('Camera Permission Status', JSON.stringify(response));
+        } catch (e) {
+            setCameraError(e?.message || String(e));
+            addToLog('Camera Permission Status Error', e?.message || String(e));
+        }
+    };
+
+    const handleRequestCameraPermission = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('requestCameraPermission');
+            setCameraPermission(response);
+            setCameraError(null);
+            addToLog('Request Camera Permission', JSON.stringify(response));
+        } catch (e) {
+            setCameraError(e?.message || String(e));
+            addToLog('Request Camera Permission Error', e?.message || String(e));
+        }
+    };
+
+    const handleGetMicrophonePermissionStatus = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('getMicrophonePermissionStatus');
+            setMicrophonePermission(response);
+            setMicrophoneError(null);
+            addToLog('Microphone Permission Status', JSON.stringify(response));
+        } catch (e) {
+            setMicrophoneError(e?.message || String(e));
+            addToLog('Microphone Permission Status Error', e?.message || String(e));
+        }
+    };
+
+    const handleRequestMicrophonePermission = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('requestMicrophonePermission');
+            setMicrophonePermission(response);
+            setMicrophoneError(null);
+            addToLog('Request Microphone Permission', JSON.stringify(response));
+        } catch (e) {
+            setMicrophoneError(e?.message || String(e));
+            addToLog('Request Microphone Permission Error', e?.message || String(e));
+        }
+    };
+
     const handleChangeLocale = async (lang) => {
         if (!window.flutter_inappwebview) return;
         try {
@@ -644,6 +700,10 @@ export default function Home() {
                 onGetLocationPermissionStatus={handleGetLocationPermissionStatus}
                 onRequestLocationPermission={handleRequestLocationPermission}
                 onGetLocation={handleGetLocation}
+                onGetCameraPermissionStatus={handleGetCameraPermissionStatus}
+                onRequestCameraPermission={handleRequestCameraPermission}
+                onGetMicrophonePermissionStatus={handleGetMicrophonePermissionStatus}
+                onRequestMicrophonePermission={handleRequestMicrophonePermission}
                 onBiometricAuthenticate={handleBiometricAuthenticate}
                 onGetRefreshToken={handleGetRefreshToken}
                 onSaveRefreshToken={handleSaveRefreshToken}
@@ -652,6 +712,10 @@ export default function Home() {
                 locationPermission={locationPermission}
                 location={location}
                 locationError={locationError}
+                cameraPermission={cameraPermission}
+                cameraError={cameraError}
+                microphonePermission={microphonePermission}
+                microphoneError={microphoneError}
                 refreshTokenOwnerKey={refreshTokenOwnerKey}
                 refreshToken={refreshToken}
                 biometricAuthResult={biometricAuthResult}
