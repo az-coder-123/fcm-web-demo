@@ -19,6 +19,8 @@ export default function NativeBridgeActions({
     onRequestMicrophonePermission,
     onGetPhotoPermissionStatus,
     onRequestPhotoPermission,
+    onGetTrackingPermissionStatus,
+    onRequestTrackingPermission,
     onGetRefreshToken,
     onSaveRefreshToken,
     biometricSupport,
@@ -32,6 +34,8 @@ export default function NativeBridgeActions({
     microphoneError,
     photoPermission,
     photoError,
+    trackingPermission,
+    trackingError,
     refreshTokenOwnerKey,
     refreshToken,
     biometricAuthResult,
@@ -341,6 +345,53 @@ export default function NativeBridgeActions({
                 {photoError && (
                     <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
                         Photo error: {photoError}
+                    </p>
+                )}
+            </div>
+
+            {/* App Tracking Transparency (iOS) & Advertising ID (Android) Permission Actions */}
+            <div style={{ marginBottom: 16 }}>
+                <h3>App Tracking Transparency & Advertising ID Permission</h3>
+                {!isNativeApp && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: '#b71c1c' }}>
+                        Lưu ý: chức năng theo dõi quảng cáo cần chạy trong mobile app WebView. Nếu đang chạy trên trình duyệt thông thường, các nút sẽ không thực hiện được vì không có bridge.
+                    </p>
+                )}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={onGetTrackingPermissionStatus} style={{ padding: '8px 12px' }}>
+                        Get Tracking Permission Status
+                    </button>
+                    <button onClick={onRequestTrackingPermission} style={{ padding: '8px 12px' }}>
+                        Request Tracking Permission
+                    </button>
+                </div>
+
+                {trackingPermission && trackingPermission.isGranted === false && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'orange' }}>
+                        Tracking permission chưa được cấp. Hãy yêu cầu quyền từ app (Request Tracking Permission).
+                    </p>
+                )}
+
+                {trackingPermission && trackingPermission.isGranted === true && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'green' }}>
+                        Tracking permission đã được cấp.
+                    </p>
+                )}
+
+                {trackingPermission && trackingPermission.permission === 'restricted' && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'orange' }}>
+                        ⚠️ Tracking permission bị hạn chế (restricted): có thể do thiết bị được quản lý hoặc kiểm soát của phụ huynh.
+                    </p>
+                )}
+
+                {trackingPermission && (
+                    <p style={{ marginTop: 8, fontSize: 14 }}>
+                        Tracking permission: {JSON.stringify(trackingPermission)}
+                    </p>
+                )}
+                {trackingError && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
+                        Tracking error: {trackingError}
                     </p>
                 )}
             </div>

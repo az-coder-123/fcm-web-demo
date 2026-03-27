@@ -43,6 +43,8 @@ export default function Home() {
     const [microphoneError, setMicrophoneError] = useState(null);
     const [photoPermission, setPhotoPermission] = useState(null);
     const [photoError, setPhotoError] = useState(null);
+    const [trackingPermission, setTrackingPermission] = useState(null);
+    const [trackingError, setTrackingError] = useState(null);
     const [refreshTokenOwnerKey, setRefreshTokenOwnerKey] = useState(null);
     const [refreshToken, setRefreshToken] = useState(null);
     const [biometricAuthResult, setBiometricAuthResult] = useState(null);
@@ -587,6 +589,32 @@ export default function Home() {
         }
     };
 
+    const handleGetTrackingPermissionStatus = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('getTrackingPermissionStatus');
+            setTrackingPermission(response);
+            setTrackingError(null);
+            addToLog('Tracking Permission Status', JSON.stringify(response));
+        } catch (e) {
+            setTrackingError(e?.message || String(e));
+            addToLog('Tracking Permission Status Error', e?.message || String(e));
+        }
+    };
+
+    const handleRequestTrackingPermission = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('requestTrackingPermission');
+            setTrackingPermission(response);
+            setTrackingError(null);
+            addToLog('Request Tracking Permission', JSON.stringify(response));
+        } catch (e) {
+            setTrackingError(e?.message || String(e));
+            addToLog('Request Tracking Permission Error', e?.message || String(e));
+        }
+    };
+
     const handleChangeLocale = async (lang) => {
         if (!window.flutter_inappwebview) return;
         try {
@@ -734,6 +762,8 @@ export default function Home() {
                 onRequestMicrophonePermission={handleRequestMicrophonePermission}
                 onGetPhotoPermissionStatus={handleGetPhotoPermissionStatus}
                 onRequestPhotoPermission={handleRequestPhotoPermission}
+                onGetTrackingPermissionStatus={handleGetTrackingPermissionStatus}
+                onRequestTrackingPermission={handleRequestTrackingPermission}
                 onBiometricAuthenticate={handleBiometricAuthenticate}
                 onGetRefreshToken={handleGetRefreshToken}
                 onSaveRefreshToken={handleSaveRefreshToken}
@@ -748,6 +778,8 @@ export default function Home() {
                 microphoneError={microphoneError}
                 photoPermission={photoPermission}
                 photoError={photoError}
+                trackingPermission={trackingPermission}
+                trackingError={trackingError}
                 refreshTokenOwnerKey={refreshTokenOwnerKey}
                 refreshToken={refreshToken}
                 biometricAuthResult={biometricAuthResult}
