@@ -23,6 +23,8 @@ export default function NativeBridgeActions({
     onRequestTrackingPermission,
     onGetNotificationPermissionStatus,
     onRequestNotificationPermission,
+    onGetContactPermissionStatus,
+    onRequestContactPermission,
     onGetRefreshToken,
     onSaveRefreshToken,
     biometricSupport,
@@ -40,6 +42,8 @@ export default function NativeBridgeActions({
     trackingError,
     notificationPermission,
     notificationError,
+    contactPermission,
+    contactError,
     refreshTokenOwnerKey,
     refreshToken,
     biometricAuthResult,
@@ -437,6 +441,53 @@ export default function NativeBridgeActions({
                 {notificationError && (
                     <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
                         Notification error: {notificationError}
+                    </p>
+                )}
+            </div>
+
+            {/* Contacts Permission Actions */}
+            <div style={{ marginBottom: 16 }}>
+                <h3>Contacts Permission Actions</h3>
+                {!isNativeApp && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: '#b71c1c' }}>
+                        Lưu ý: chức năng yêu cầu quyền danh bạ cần chạy trong mobile app WebView. Nếu đang chạy trên trình duyệt thông thường, các nút sẽ không thực hiện được vì không có bridge.
+                    </p>
+                )}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={onGetContactPermissionStatus} style={{ padding: '8px 12px' }}>
+                        Get Contact Permission Status
+                    </button>
+                    <button onClick={onRequestContactPermission} style={{ padding: '8px 12px' }}>
+                        Request Contact Permission
+                    </button>
+                </div>
+
+                {contactPermission && contactPermission.isGranted === false && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'orange' }}>
+                        Danh bạ permission chưa được cấp. Hãy yêu cầu quyền từ app (Request Contact Permission) hoặc mở lại Settings.
+                    </p>
+                )}
+
+                {contactPermission && contactPermission.isGranted === true && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'green' }}>
+                        ✅ Danh bạ permission đã được cấp.
+                    </p>
+                )}
+
+                {contactPermission && contactPermission.permission === 'restricted' && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'orange' }}>
+                        ⚠️ Danh bạ permission bị hạn chế (restricted): có thể do thiết bị được quản lý hoặc kiểm soát của phụ huynh.
+                    </p>
+                )}
+
+                {contactPermission && (
+                    <p style={{ marginTop: 8, fontSize: 14 }}>
+                        Contact permission: {JSON.stringify(contactPermission)}
+                    </p>
+                )}
+                {contactError && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
+                        Contact error: {contactError}
                     </p>
                 )}
             </div>

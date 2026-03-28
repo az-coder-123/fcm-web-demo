@@ -47,6 +47,8 @@ export default function Home() {
     const [trackingError, setTrackingError] = useState(null);
     const [notificationPermission, setNotificationPermission] = useState(null);
     const [notificationError, setNotificationError] = useState(null);
+    const [contactPermission, setContactPermission] = useState(null);
+    const [contactError, setContactError] = useState(null);
     const [refreshTokenOwnerKey, setRefreshTokenOwnerKey] = useState(null);
     const [refreshToken, setRefreshToken] = useState(null);
     const [biometricAuthResult, setBiometricAuthResult] = useState(null);
@@ -643,6 +645,32 @@ export default function Home() {
         }
     };
 
+    const handleGetContactPermissionStatus = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('getContactPermissionStatus');
+            setContactPermission(response);
+            setContactError(null);
+            addToLog('Contact Permission Status', JSON.stringify(response));
+        } catch (e) {
+            setContactError(e?.message || String(e));
+            addToLog('Contact Permission Status Error', e?.message || String(e));
+        }
+    };
+
+    const handleRequestContactPermission = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('requestContactPermission');
+            setContactPermission(response);
+            setContactError(null);
+            addToLog('Request Contact Permission', JSON.stringify(response));
+        } catch (e) {
+            setContactError(e?.message || String(e));
+            addToLog('Request Contact Permission Error', e?.message || String(e));
+        }
+    };
+
     const handleChangeLocale = async (lang) => {
         if (!window.flutter_inappwebview) return;
         try {
@@ -794,6 +822,8 @@ export default function Home() {
                 onRequestTrackingPermission={handleRequestTrackingPermission}
                 onGetNotificationPermissionStatus={handleGetNotificationPermissionStatus}
                 onRequestNotificationPermission={handleRequestNotificationPermission}
+                onGetContactPermissionStatus={handleGetContactPermissionStatus}
+                onRequestContactPermission={handleRequestContactPermission}
                 onBiometricAuthenticate={handleBiometricAuthenticate}
                 onGetRefreshToken={handleGetRefreshToken}
                 onSaveRefreshToken={handleSaveRefreshToken}
@@ -812,6 +842,8 @@ export default function Home() {
                 trackingError={trackingError}
                 notificationPermission={notificationPermission}
                 notificationError={notificationError}
+                contactPermission={contactPermission}
+                contactError={contactError}
                 refreshTokenOwnerKey={refreshTokenOwnerKey}
                 refreshToken={refreshToken}
                 biometricAuthResult={biometricAuthResult}
