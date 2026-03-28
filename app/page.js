@@ -45,6 +45,8 @@ export default function Home() {
     const [photoError, setPhotoError] = useState(null);
     const [trackingPermission, setTrackingPermission] = useState(null);
     const [trackingError, setTrackingError] = useState(null);
+    const [notificationPermission, setNotificationPermission] = useState(null);
+    const [notificationError, setNotificationError] = useState(null);
     const [refreshTokenOwnerKey, setRefreshTokenOwnerKey] = useState(null);
     const [refreshToken, setRefreshToken] = useState(null);
     const [biometricAuthResult, setBiometricAuthResult] = useState(null);
@@ -615,6 +617,32 @@ export default function Home() {
         }
     };
 
+    const handleGetNotificationPermissionStatus = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('getNotificationPermissionStatus');
+            setNotificationPermission(response);
+            setNotificationError(null);
+            addToLog('Notification Permission Status', JSON.stringify(response));
+        } catch (e) {
+            setNotificationError(e?.message || String(e));
+            addToLog('Notification Permission Status Error', e?.message || String(e));
+        }
+    };
+
+    const handleRequestNotificationPermission = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('requestNotificationPermission');
+            setNotificationPermission(response);
+            setNotificationError(null);
+            addToLog('Request Notification Permission', JSON.stringify(response));
+        } catch (e) {
+            setNotificationError(e?.message || String(e));
+            addToLog('Request Notification Permission Error', e?.message || String(e));
+        }
+    };
+
     const handleChangeLocale = async (lang) => {
         if (!window.flutter_inappwebview) return;
         try {
@@ -764,6 +792,8 @@ export default function Home() {
                 onRequestPhotoPermission={handleRequestPhotoPermission}
                 onGetTrackingPermissionStatus={handleGetTrackingPermissionStatus}
                 onRequestTrackingPermission={handleRequestTrackingPermission}
+                onGetNotificationPermissionStatus={handleGetNotificationPermissionStatus}
+                onRequestNotificationPermission={handleRequestNotificationPermission}
                 onBiometricAuthenticate={handleBiometricAuthenticate}
                 onGetRefreshToken={handleGetRefreshToken}
                 onSaveRefreshToken={handleSaveRefreshToken}
@@ -780,6 +810,8 @@ export default function Home() {
                 photoError={photoError}
                 trackingPermission={trackingPermission}
                 trackingError={trackingError}
+                notificationPermission={notificationPermission}
+                notificationError={notificationError}
                 refreshTokenOwnerKey={refreshTokenOwnerKey}
                 refreshToken={refreshToken}
                 biometricAuthResult={biometricAuthResult}

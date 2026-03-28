@@ -21,6 +21,8 @@ export default function NativeBridgeActions({
     onRequestPhotoPermission,
     onGetTrackingPermissionStatus,
     onRequestTrackingPermission,
+    onGetNotificationPermissionStatus,
+    onRequestNotificationPermission,
     onGetRefreshToken,
     onSaveRefreshToken,
     biometricSupport,
@@ -36,6 +38,8 @@ export default function NativeBridgeActions({
     photoError,
     trackingPermission,
     trackingError,
+    notificationPermission,
+    notificationError,
     refreshTokenOwnerKey,
     refreshToken,
     biometricAuthResult,
@@ -392,6 +396,47 @@ export default function NativeBridgeActions({
                 {trackingError && (
                     <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
                         Tracking error: {trackingError}
+                    </p>
+                )}
+            </div>
+
+            {/* Notification Permission Actions */}
+            <div style={{ marginBottom: 16 }}>
+                <h3>Notification Permission Actions</h3>
+                {!isNativeApp && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: '#b71c1c' }}>
+                        Lưu ý: chức năng yêu cầu quyền thông báo cần chạy trong mobile app WebView. Nếu đang chạy trên trình duyệt thông thường, các nút sẽ không thực hiện được vì không có bridge.
+                    </p>
+                )}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={onGetNotificationPermissionStatus} style={{ padding: '8px 12px' }}>
+                        Get Notification Permission Status
+                    </button>
+                    <button onClick={onRequestNotificationPermission} style={{ padding: '8px 12px' }}>
+                        Request Notification Permission
+                    </button>
+                </div>
+
+                {notificationPermission && notificationPermission.isGranted === true && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'green' }}>
+                        ✅ Notification permission đã được cấp.
+                    </p>
+                )}
+
+                {notificationPermission && notificationPermission.permission === 'restricted' && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'orange' }}>
+                        ⚠️ Notification permission bị hạn chế (restricted): có thể do thiết bị được quản lý hoặc kiểm soát của phụ huynh.
+                    </p>
+                )}
+
+                {notificationPermission && (
+                    <p style={{ marginTop: 8, fontSize: 14 }}>
+                        Notification permission: {JSON.stringify(notificationPermission)}
+                    </p>
+                )}
+                {notificationError && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
+                        Notification error: {notificationError}
                     </p>
                 )}
             </div>
