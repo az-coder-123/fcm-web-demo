@@ -188,9 +188,9 @@ export default function Home() {
         };
 
         const handleLocaleChanged = (event) => {
-            const { languageCode } = event.detail;
+            const { languageCode, countryCode } = event.detail;
             console.log('Locale changed from native:', event.detail);
-            setCurrentLocale({ languageCode });
+            setCurrentLocale({ languageCode, countryCode });
             setToast({
                 title: 'Language Changed',
                 body: `App language changed to ${languageCode}`,
@@ -673,6 +673,9 @@ export default function Home() {
 
     const handleChangeLocale = async (lang) => {
         if (!window.flutter_inappwebview) return;
+        // Optimistically update locale immediately for responsive UI
+        const countryCode = lang === 'vi' ? 'VN' : 'US';
+        setCurrentLocale({ languageCode: lang, countryCode });
         try {
             const response = await window.flutter_inappwebview.callHandler('changeLocale', lang);
             if (response && response.success) {
