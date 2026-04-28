@@ -1,4 +1,5 @@
 import './globals.css';
+import { SkinColorInitializer } from '../components/SkinColorInitializer';
 
 export const metadata = {
     title: 'Webview FCM',
@@ -19,13 +20,16 @@ export default function RootLayout({ children }) {
     };
 
     return (
-        <html lang="en">
+        <html lang="en" style={{ '--primary-color': '#1E88E5' }}>
             <head>
                 <script dangerouslySetInnerHTML={{
                     __html: `window.__FIREBASE_CONFIG__ = ${JSON.stringify(firebaseConfig)};`
                 }} />
             </head>
-            <body style={{ margin: 0 }}>{children}</body>
+            <body style={{ margin: 0 }}>
+                <SkinColorInitializer />
+                {children}
+            </body>
         </html>
     );
 }

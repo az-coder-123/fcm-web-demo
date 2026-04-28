@@ -19,6 +19,7 @@ import NetworkStatus from '../components/NetworkStatus';
 import TestActions from '../components/TestActions';
 import Toast from '../components/Toast';
 import TokenSubmission from '../components/TokenSubmission';
+import { SkinColorControl } from '../components/SkinColorControl';
 
 export default function Home() {
     const [token, setToken] = useState(null);
@@ -781,6 +782,8 @@ export default function Home() {
     return (
         <main style={{ padding: 16, fontFamily: 'system-ui', maxWidth: 800, margin: '0 auto' }}>
             <h1>Firebase Cloud Messaging & Native Bridge Demo</h1>
+
+            <SkinColorControl />
 
             <AppStatus isNativeApp={isNativeApp} appInfo={appInfo} />
             <NetworkStatus networkStatus={networkStatus} />
