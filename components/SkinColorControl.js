@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { notifyNativeSkinColor } from '../lib/skinColor';
 
 const PRESET_COLORS = [
@@ -56,6 +56,11 @@ export function SkinColorControl() {
   };
 
   const [hoveredColor, setHoveredColor] = useState(null);
+  const [isNativeApp, setIsNativeApp] = useState(false);
+
+  useEffect(() => {
+    setIsNativeApp(typeof window !== 'undefined' && !!window.flutter_inappwebview);
+  }, []);
 
   return (
     <div style={styles.container}>
@@ -140,7 +145,7 @@ export function SkinColorControl() {
         <small style={styles.info}>
           ℹ️ Current color: <strong>{currentColor}</strong>
           <br />
-          {typeof window !== 'undefined' && window.flutter_inappwebview
+          {isNativeApp
             ? '✅ Connected to native app'
             : '⚠️ Not in native app (testing in browser)'}
         </small>
