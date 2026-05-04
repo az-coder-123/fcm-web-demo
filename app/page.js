@@ -9,6 +9,7 @@ import {
 
 // Components
 import AppStatus from '../components/AppStatus';
+import BiometricKeyBasedActions from '../components/BiometricKeyBasedActions';
 import ErrorDisplay from '../components/ErrorDisplay';
 import EventLog from '../components/EventLog';
 import ExternalUrlActions from '../components/ExternalUrlActions';
@@ -16,10 +17,10 @@ import FcmTokenSection from '../components/FcmTokenSection';
 import Instructions from '../components/Instructions';
 import NativeBridgeActions from '../components/NativeBridgeActions';
 import NetworkStatus from '../components/NetworkStatus';
+import { SkinColorControl } from '../components/SkinColorControl';
 import TestActions from '../components/TestActions';
 import Toast from '../components/Toast';
 import TokenSubmission from '../components/TokenSubmission';
-import { SkinColorControl } from '../components/SkinColorControl';
 
 export default function Home() {
     const [token, setToken] = useState(null);
@@ -855,6 +856,8 @@ export default function Home() {
                 biometricAuthResult={biometricAuthResult}
                 isNativeApp={isNativeApp}
             />
+
+            <BiometricKeyBasedActions isNativeApp={isNativeApp} addToLog={addToLog} />
 
             <ExternalUrlActions />
 
