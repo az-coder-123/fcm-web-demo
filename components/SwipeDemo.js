@@ -17,7 +17,8 @@ import useSwipeDetection from '../lib/useSwipeDetection';
 export default function SwipeDemo() {
     const { lastSwipe, swipeHistory, isListening } = useSwipeDetection();
     const [cardIndex, setCardIndex] = useState(0);
-    const [arrowAnim, setArrowAnim] = useState(null); // 'left' | 'right' | null
+    const [arrowAnim, setArrowAnim] = useState(null); // 'left' | 'right' | 'down' | null
+    const [isReloading, setIsReloading] = useState(false);
 
     const cards = [
         { title: 'Card 1', color: '#E3F2FD', description: 'Swipe left/right to navigate between cards' },
@@ -27,6 +28,14 @@ export default function SwipeDemo() {
     ];
 
     const handleSwipeNavigation = useCallback((direction) => {
+        if (direction === 'down') {
+            // Pull-down triggers reload simulation
+            setIsReloading(true);
+            setTimeout(() => {
+                window.location.reload();
+            }, 800);
+            return;
+        }
         if (direction === 'left') {
             setCardIndex(prev => Math.min(prev + 1, cards.length - 1));
         } else {
@@ -45,11 +54,12 @@ export default function SwipeDemo() {
     }, [lastSwipe, handleSwipeNavigation]);
 
     const simulateSwipe = (direction) => {
+        const isDown = direction === 'down';
         const simulatedSwipe = {
             direction,
-            deltaX: direction === 'right' ? 150 : -150,
-            deltaY: 5,
-            velocity: 0.75,
+            deltaX: isDown ? 3 : (direction === 'right' ? 150 : -150),
+            deltaY: isDown ? 120 : 5,
+            velocity: isDown ? 0.4 : 0.75,
             source: 'simulated',
         };
         // Dispatch as a custom event so useSwipeDetection picks it up
@@ -76,27 +86,42 @@ export default function SwipeDemo() {
 
             {/* Thresholds info */}
             <div style={styles.thresholdsBox}>
-                <strong>Detection Thresholds:</strong>
+                <strong>Horizontal Swipe Thresholds:</strong>
                 <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 4 }}>
                     <span style={styles.badge}>Min distance: 80px</span>
                     <span style={styles.badge}>Max time: 500ms</span>
-                    <span style={styles.badge}>Max vertical ratio: 0.75</span>
+                    <span style={styles.badge}>Max vert ratio: 0.75</span>
+                </div>
+                <strong style={{ display: 'block', marginTop: 6 }}>Pull-Down Thresholds:</strong>
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 4 }}>
+                    <span style={styles.badge}>Min distance: 60px</span>
+                    <span style={styles.badge}>Max time: 600ms</span>
+                    <span style={styles.badge}>Min vert ratio: 1.5</span>
+                    <span style={{ ...styles.badge, background: '#FFECB3' }}>scrollY === 0</span>
                 </div>
             </div>
+
+            {/* Reload overlay for pull-down */}
+            {isReloading && (
+                <div style={styles.reloadOverlay}>
+                    <div style={{ fontSize: 28, marginBottom: 8 }}>🔄</div>
+                    <div style={{ fontWeight: 600 }}>Reloading...</div>
+                </div>
+            )}
 
             {/* Swipe direction arrow animation */}
             <div style={styles.arrowContainer}>
                 {arrowAnim ? (
                     <div style={{
                         ...styles.arrowPulse,
-                        transform: arrowAnim === 'left' ? 'translateX(-20px)' : 'translateX(20px)',
+                        transform: arrowAnim === 'left' ? 'translateX(-20px)' : arrowAnim === 'down' ? 'translateY(20px)' : 'translateX(20px)',
                         opacity: 0,
                     }}>
-                        {arrowAnim === 'left' ? '⬅️' : '➡️'}
+                        {arrowAnim === 'left' ? '⬅️' : arrowAnim === 'down' ? '⬇️' : '➡️'}
                     </div>
                 ) : (
                     <div style={{ color: '#999', fontSize: 13 }}>
-                        Swipe horizontally to see direction indicator
+                        Swipe horizontally or pull-down to see direction indicator
                     </div>
                 )}
             </div>
@@ -106,7 +131,7 @@ export default function SwipeDemo() {
                 <div style={styles.lastSwipeBox}>
                     <strong>Last Swipe:</strong>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginTop: 6, fontSize: 13 }}>
-                        <span>Direction: <strong>{lastSwipe.direction === 'left' ? '⬅️ Left' : '➡️ Right'}</strong></span>
+                        <span>Direction: <strong>{lastSwipe.direction === 'left' ? '⬅️ Left' : lastSwipe.direction === 'down' ? '⬇️ Down (Pull-to-Reload)' : '➡️ Right'}</strong></span>
                         <span>Source: <strong>{lastSwipe.source}</strong></span>
                         <span>DeltaX: <strong>{lastSwipe.deltaX}px</strong></span>
                         <span>DeltaY: <strong>{lastSwipe.deltaY}px</strong></span>
@@ -165,10 +190,13 @@ export default function SwipeDemo() {
             {/* Simulate swipe buttons */}
             <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
                 <button onClick={() => simulateSwipe('left')} style={styles.simBtn}>
-                    ⬅️ Simulate Swipe Left
+                    ⬅️ Left
+                </button>
+                <button onClick={() => simulateSwipe('down')} style={{ ...styles.simBtn, background: '#FFF3E0' }}>
+                    ⬇️ Pull Down
                 </button>
                 <button onClick={() => simulateSwipe('right')} style={styles.simBtn}>
-                    ➡️ Simulate Swipe Right
+                    ➡️ Right
                 </button>
             </div>
 
@@ -182,7 +210,7 @@ export default function SwipeDemo() {
                         {swipeHistory.map((sw) => (
                             <div key={sw.id} style={styles.historyItem}>
                                 <span style={{ fontSize: 16 }}>
-                                    {sw.direction === 'left' ? '⬅️' : '➡️'}
+                                    {sw.direction === 'left' ? '⬅️' : sw.direction === 'down' ? '⬇️' : '➡️'}
                                 </span>
                                 <span style={{ fontSize: 12, fontWeight: 600 }}>
                                     {sw.direction.toUpperCase()}
@@ -273,7 +301,20 @@ const styles = {
         borderRadius: 6,
         background: '#FAFAFA',
         cursor: 'pointer',
-        fontSize: 13,
+        fontSize: 12,
+    },
+    reloadOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(255,255,255,0.85)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
     },
     historyList: {
         maxHeight: 160,
