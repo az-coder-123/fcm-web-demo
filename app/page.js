@@ -18,6 +18,7 @@ import Instructions from '../components/Instructions';
 import NativeBridgeActions from '../components/NativeBridgeActions';
 import NetworkStatus from '../components/NetworkStatus';
 import { SkinColorControl } from '../components/SkinColorControl';
+import SwipeDemo from '../components/SwipeDemo';
 import TestActions from '../components/TestActions';
 import Toast from '../components/Toast';
 import TokenSubmission from '../components/TokenSubmission';
@@ -858,6 +859,8 @@ export default function Home() {
             />
 
             <BiometricKeyBasedActions isNativeApp={isNativeApp} addToLog={addToLog} />
+
+            <SwipeDemo />
 
             <ExternalUrlActions />
 
