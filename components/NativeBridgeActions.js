@@ -47,7 +47,9 @@ export default function NativeBridgeActions({
     refreshTokenOwnerKey,
     refreshToken,
     biometricAuthResult,
-    isNativeApp
+    isNativeApp,
+    otpResult,
+    onRequestOTPInput
 }) {
     const [keyInput, setKeyInput] = useState('demo@example.com');
     const [tokenInput, setTokenInput] = useState('web-demo-refresh-token');
@@ -488,6 +490,44 @@ export default function NativeBridgeActions({
                 {contactError && (
                     <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
                         Contact error: {contactError}
+                    </p>
+                )}
+            </div>
+
+            {/* OTP Input from Mobile App */}
+            <div style={{ marginBottom: 16 }}>
+                <h3>OTP Input (from Mobile App)</h3>
+                <p style={{ fontSize: 14, color: '#555' }}>
+                    Yêu cầu mobile app hiển thị màn hình nhập OTP native. Người dùng nhập 6 chữ số trên mobile, kết quả trả về cho web.
+                </p>
+                {!isNativeApp && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: '#b71c1c' }}>
+                        Lưu ý: chức năng này cần chạy trong mobile app WebView.
+                    </p>
+                )}
+                <button
+                    onClick={onRequestOTPInput}
+                    style={{
+                        padding: '10px 20px',
+                        background: '#1565c0',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: 6,
+                        cursor: 'pointer',
+                        fontSize: 14,
+                    }}
+                >
+                    📱 Request OTP Input
+                </button>
+
+                {otpResult && otpResult.success && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'green' }}>
+                        ✅ OTP received: <strong>{otpResult.value}</strong>
+                    </p>
+                )}
+                {otpResult && !otpResult.success && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
+                        ❌ {otpResult.error || 'Failed'}
                     </p>
                 )}
             </div>

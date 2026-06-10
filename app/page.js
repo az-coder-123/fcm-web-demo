@@ -56,6 +56,7 @@ export default function Home() {
     const [refreshToken, setRefreshToken] = useState(null);
     const [biometricAuthResult, setBiometricAuthResult] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(true);
+    const [otpResult, setOtpResult] = useState(null);
 
     useEffect(() => {
         // Detect mobile app webview via query parameter ?versioninfo=mobileapp
@@ -755,6 +756,23 @@ export default function Home() {
         }
     };
 
+    const handleRequestOTPInput = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            setOtpResult(null);
+            const response = await window.flutter_inappwebview.callHandler('requestOTPInput');
+            setOtpResult(response);
+            if (response && response.success) {
+                addToLog('OTP Input', `OTP received: ${response.value}`);
+            } else {
+                addToLog('OTP Input', `Cancelled or error: ${response?.error || 'unknown'}`);
+            }
+        } catch (e) {
+            setOtpResult({ success: false, error: e?.message || String(e) });
+            addToLog('OTP Input Error', e?.message || String(e));
+        }
+    };
+
     const handleSimulateNotification = () => {
         if (isNativeApp) {
             window.dispatchEvent(new CustomEvent('pushNotificationReceived', {
@@ -856,6 +874,8 @@ export default function Home() {
                 refreshToken={refreshToken}
                 biometricAuthResult={biometricAuthResult}
                 isNativeApp={isNativeApp}
+                otpResult={otpResult}
+                onRequestOTPInput={handleRequestOTPInput}
             />
 
             <BiometricKeyBasedActions isNativeApp={isNativeApp} addToLog={addToLog} />
