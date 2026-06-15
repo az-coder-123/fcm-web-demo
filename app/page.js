@@ -44,6 +44,8 @@ export default function Home() {
     const [cameraError, setCameraError] = useState(null);
     const [microphonePermission, setMicrophonePermission] = useState(null);
     const [microphoneError, setMicrophoneError] = useState(null);
+    const [currentCamera, setCurrentCamera] = useState(null);
+    const [cameraSwitchError, setCameraSwitchError] = useState(null);
     const [photoPermission, setPhotoPermission] = useState(null);
     const [photoError, setPhotoError] = useState(null);
     const [trackingPermission, setTrackingPermission] = useState(null);
@@ -545,6 +547,35 @@ export default function Home() {
         }
     };
 
+    // Ask native to toggle the active camera (front <-> back). Native owns the
+    // facing state and returns the new value; the web then re-runs getUserMedia
+    // with response.facingMode to actually switch the live stream.
+    const handleSwitchCamera = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('switchCamera');
+            setCurrentCamera(response);
+            setCameraSwitchError(null);
+            addToLog('Switch Camera', JSON.stringify(response));
+        } catch (e) {
+            setCameraSwitchError(e?.message || String(e));
+            addToLog('Switch Camera Error', e?.message || String(e));
+        }
+    };
+
+    const handleGetCurrentCamera = async () => {
+        if (!window.flutter_inappwebview) return;
+        try {
+            const response = await window.flutter_inappwebview.callHandler('getCurrentCamera');
+            setCurrentCamera(response);
+            setCameraSwitchError(null);
+            addToLog('Get Current Camera', JSON.stringify(response));
+        } catch (e) {
+            setCameraSwitchError(e?.message || String(e));
+            addToLog('Get Current Camera Error', e?.message || String(e));
+        }
+    };
+
     const handleGetMicrophonePermissionStatus = async () => {
         if (!window.flutter_inappwebview) return;
         try {
@@ -842,6 +873,8 @@ export default function Home() {
                 onRequestCameraPermission={handleRequestCameraPermission}
                 onGetMicrophonePermissionStatus={handleGetMicrophonePermissionStatus}
                 onRequestMicrophonePermission={handleRequestMicrophonePermission}
+                onSwitchCamera={handleSwitchCamera}
+                onGetCurrentCamera={handleGetCurrentCamera}
                 onGetPhotoPermissionStatus={handleGetPhotoPermissionStatus}
                 onRequestPhotoPermission={handleRequestPhotoPermission}
                 onGetTrackingPermissionStatus={handleGetTrackingPermissionStatus}
@@ -862,6 +895,8 @@ export default function Home() {
                 cameraError={cameraError}
                 microphonePermission={microphonePermission}
                 microphoneError={microphoneError}
+                currentCamera={currentCamera}
+                cameraSwitchError={cameraSwitchError}
                 photoPermission={photoPermission}
                 photoError={photoError}
                 trackingPermission={trackingPermission}

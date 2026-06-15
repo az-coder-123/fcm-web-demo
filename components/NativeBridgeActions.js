@@ -17,6 +17,8 @@ export default function NativeBridgeActions({
     onRequestCameraPermission,
     onGetMicrophonePermissionStatus,
     onRequestMicrophonePermission,
+    onSwitchCamera,
+    onGetCurrentCamera,
     onGetPhotoPermissionStatus,
     onRequestPhotoPermission,
     onGetTrackingPermissionStatus,
@@ -36,6 +38,8 @@ export default function NativeBridgeActions({
     cameraError,
     microphonePermission,
     microphoneError,
+    currentCamera,
+    cameraSwitchError,
     photoPermission,
     photoError,
     trackingPermission,
@@ -308,6 +312,45 @@ export default function NativeBridgeActions({
                 {microphoneError && (
                     <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
                         Microphone error: {microphoneError}
+                    </p>
+                )}
+            </div>
+
+            {/* Switch Camera Actions */}
+            <div style={{ marginBottom: 16 }}>
+                <h3>Switch Camera (Front / Back)</h3>
+                <p style={{ fontSize: 14, color: '#555' }}>
+                    Yêu cầu mobile app đổi camera. Native giữ trạng thái facing và trả về camera mới.
+                    Web dùng <code>facingMode</code> trả về để gọi lại <code>getUserMedia(&#123; video: &#123; facingMode &#125; &#125;)</code> cho luồng live.
+                </p>
+                {!isNativeApp && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: '#b71c1c' }}>
+                        Lưu ý: chức năng switch camera cần chạy trong mobile app WebView. Nếu đang chạy trên trình duyệt thông thường, các nút sẽ không thực hiện được vì không có bridge.
+                    </p>
+                )}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={onGetCurrentCamera} style={{ padding: '8px 12px' }}>
+                        Get Current Camera
+                    </button>
+                    <button onClick={onSwitchCamera} style={{ padding: '8px 12px' }}>
+                        🔄 Switch Camera
+                    </button>
+                </div>
+
+                {currentCamera && currentCamera.success && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'green' }}>
+                        ✅ Camera hiện tại: <strong>{currentCamera.camera}</strong> (facingMode: <code>{currentCamera.facingMode}</code>)
+                    </p>
+                )}
+
+                {currentCamera && (
+                    <p style={{ marginTop: 8, fontSize: 14 }}>
+                        Switch camera response: {JSON.stringify(currentCamera)}
+                    </p>
+                )}
+                {cameraSwitchError && (
+                    <p style={{ marginTop: 8, fontSize: 14, color: 'red' }}>
+                        Switch camera error: {cameraSwitchError}
                     </p>
                 )}
             </div>
